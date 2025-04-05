@@ -1,5 +1,4 @@
 import { Footer, Navbar } from '@/components/layouts'
-import React from 'react'
 
 const MarketingLayout = ({ children }: { children: React.ReactNode }) => {
     return (
