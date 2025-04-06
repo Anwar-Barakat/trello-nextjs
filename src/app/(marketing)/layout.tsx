@@ -1,4 +1,4 @@
-import { Footer, Navbar } from '@/components/layouts'
+import { Footer, Navbar } from '@/app/(marketing)/_components/layouts'
 
 const MarketingLayout = ({ children }: { children: React.ReactNode }) => {
     return (
