@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Logo } from '@/components/global'
+import { Logo, MainButton } from '@/components/global'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
@@ -16,15 +16,8 @@ const Navbar = () => {
 
                 {/* Desktop Navigation */}
                 <div className='hidden lg:flex items-center gap-4'>
-                    <Button size='sm' variant='ghost' className='text-foreground hover:bg-accent transition-colors' asChild>
-                        <Link href='/sign-in'>Login</Link>
-                    </Button>
-                    <Button
-                        className='bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md capitalize transition-colors'
-                        size='sm'
-                    >
-                        <Link href='/sign-up'>Get Taskify Free</Link>
-                    </Button>
+                    <MainButton href='/sign-in' variant='ghost'>Login</MainButton>
+                    <MainButton href='/sign-up'>Get Taskify Free</MainButton>
                 </div>
 
                 {/* Mobile Menu Toggle */}

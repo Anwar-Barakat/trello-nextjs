@@ -1,4 +1,4 @@
-import { Logo } from '@/components/global'
+import { Logo, MainButton } from '@/components/global'
 import { Button } from '@/components/ui/button'
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs'
 import { Plus } from 'lucide-react'
@@ -12,12 +12,10 @@ const Navbar = () => {
                     <Logo />
                 </div>
 
-                <Button size='sm' className='rounded-sm hidden md:flex h-auto py-1.5 px-2 '>
-                    Create
-                </Button>
-                <Button className='rounded block md:hidden' >
+                <MainButton variant='ghost' size='sm' className='rounded-sm hidden md:flex h-auto py-1.5 px-2 '>Create</MainButton>
+                <MainButton size='icon' className='rounded block md:hidden'>
                     <Plus className='h-4 w-4' />
-                </Button>
+                </MainButton>
             </div>
 
             <div className='ml-auto flex items-center  gap-x-2'>
