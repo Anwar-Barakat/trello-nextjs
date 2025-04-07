@@ -29,7 +29,6 @@ const Sidebar = ({
         },
     })
 
-    // Memoize the default accordion value calculation to avoid unnecessary recalculations
     const defaultAccordionValue = useMemo(() => {
         return Object.entries(expanded)
             .filter(([_, isExpanded]) => isExpanded)
@@ -44,8 +43,19 @@ const Sidebar = ({
 
     if (isLoading) {
         return (
-            <div className={cn("flex h-full w-full items-center justify-center p-4", className)}>
-                <Skeleton className="h-full w-full rounded-lg bg-[var(--sidebar-accent)]" />
+            <div className={cn("h-full flex flex-col", className)}>
+                <div className="flex items-center justify-between px-4 py-3 mb-2 border-b border-[var(--sidebar-border)]">
+                    <Skeleton className="h-4 w-32 bg-[var(--sidebar-accent)]" />
+                    <Skeleton className="h-8 w-8 rounded-full bg-[var(--sidebar-accent)]" />
+                </div>
+                <div className="space-y-2 px-2">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-x-2 p-2">
+                            <Skeleton className="h-5 w-5 rounded-full bg-[var(--sidebar-accent)]" />
+                            <Skeleton className="h-4 flex-1 bg-[var(--sidebar-accent)]" />
+                        </div>
+                    ))}
+                </div>
             </div>
         )
     }

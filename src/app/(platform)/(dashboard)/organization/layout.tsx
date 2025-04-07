@@ -1,42 +1,36 @@
 'use client'
 
-import React, { useState, useEffect } from "react"
+import React, { useEffect } from "react"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 
-// Import shadcn components
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 
 // Import custom components
 import Sidebar from "../_components/layouts/sidebar"
-import { Menu, X } from "lucide-react"
+import { Menu } from "lucide-react"
+import useOrganizationIdStore from "./stores/organizationId.store"
 
-type OrganizationLayoutProps = {
+type OrganizationIdLayoutProps = {
     children: React.ReactNode
 }
 
-const OrganizationLayout = ({ children }: OrganizationLayoutProps) => {
-    const [isMounted, setIsMounted] = useState(false)
-    const [isSheetOpen, setIsSheetOpen] = useState(false)
-    const [isCollapsed, setIsCollapsed] = useState(false)
+const OrganizationIdLayout = ({ children }: OrganizationIdLayoutProps) => {
+    const { isMounted, isSheetOpen, isCollapsed, setIsMounted, setIsSheetOpen, setIsCollapsed } = useOrganizationIdStore()
     const isDesktop = useMediaQuery("(min-width: 1024px)")
 
     // Handle component mount
     useEffect(() => {
         setIsMounted(true)
-    }, [])
+    }, [setIsMounted])
 
-    // Skip rendering if not mounted (for hydration)
-    if (!isMounted) {
-        return null
-    }
+    if (!isMounted) return null
 
-    // Render different layouts for mobile vs desktop
     if (!isDesktop) {
         return (
-            <div className="h-full pt-20 px-4 flex flex-col">
+            <div className="h-full w-full px-4 flex flex-col">
                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
                         <Button
@@ -53,7 +47,7 @@ const OrganizationLayout = ({ children }: OrganizationLayoutProps) => {
                     </SheetContent>
                 </Sheet>
 
-                <div className="flex-1 overflow-auto">
+                <div className="flex-1 overflow-auto m-0">
                     {children}
                 </div>
             </div>
@@ -65,7 +59,7 @@ const OrganizationLayout = ({ children }: OrganizationLayoutProps) => {
         <div className="h-full pt-20">
             <ResizablePanelGroup
                 direction="horizontal"
-                className="h-full max-w-6xl 2xl:max-w-screen-xl mx-auto px-4 md:px-6"
+                className="h-full w-full mx-auto px-4 md:px-6"
             >
                 <ResizablePanel
                     defaultSize={20}
@@ -112,4 +106,4 @@ const OrganizationLayout = ({ children }: OrganizationLayoutProps) => {
     )
 }
 
-export default OrganizationLayout
+export default OrganizationIdLayout
