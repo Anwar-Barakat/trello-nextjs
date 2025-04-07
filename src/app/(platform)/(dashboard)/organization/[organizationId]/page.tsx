@@ -12,11 +12,7 @@ const OrganizationIdPage = async () => {
 
     return (
         <div>
-            {/* <OrganizationSwitcher
-                afterSelectOrganizationUrl={'/organization/:id'}
-                afterCreateOrganizationUrl={'/organization/:id'}
-                hidePersonal
-            /> */}
+            asdad
         </div>
     )
 }
