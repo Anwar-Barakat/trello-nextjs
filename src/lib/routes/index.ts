@@ -1,4 +1,10 @@
-import { LucideIcon, Activity, CreditCard, Layout, Settings } from "lucide-react";
+import {
+  LucideIcon,
+  Activity,
+  CreditCard,
+  Layout,
+  Settings,
+} from "lucide-react";
 
 export interface RouteConfig {
   label: string;
@@ -13,7 +19,7 @@ export const generateOrganizationRoutes = (
     {
       label: "Boards",
       icon: Layout,
-      href: "/boards",
+      href: `/organization/${organizationId}`,
     },
     {
       label: "Activity",
