@@ -29,7 +29,7 @@ export const generateOrganizationRoutes = (
     {
       label: "Settings",
       icon: Settings,
-      href: `/organization/${organizationId}/settings`,
+      href: `/organization/${organizationId}/setting`,
     },
     {
       label: "Billing",
