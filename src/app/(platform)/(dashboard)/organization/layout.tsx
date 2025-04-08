@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { useOrganizationLayout } from './hooks/useOrganizationLayout'
 import MobileNavigation from './_components/mobile-navigation'
 import DesktopNavigation from './_components/desktop-navigation'
