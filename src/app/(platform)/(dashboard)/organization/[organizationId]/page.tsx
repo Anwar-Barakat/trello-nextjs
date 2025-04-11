@@ -7,10 +7,11 @@ import BoardForm from './_components/board-form'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import BoardList from './_components/board-list'
+import { listBoard } from './actions/list-board'
 
 const OrganizationIdPage = async () => {
     const { userId, orgId } = await auth()
-
+    const initialBoards = await listBoard()
     if (!userId) {
         redirect('/sign-in')
     }
@@ -32,7 +33,7 @@ const OrganizationIdPage = async () => {
                 <Separator />
                 <CardContent>
                     <div className="grid gap-4">
-                        <BoardList />
+                        <BoardList initialBoards={initialBoards ?? []} />
                     </div>
                 </CardContent>
 

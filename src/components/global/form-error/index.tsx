@@ -1,31 +1,23 @@
 import { FormControl, FormDescription, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { forwardRef } from "react";
-import type { Control } from "react-hook-form";
-import { useFormContext } from "react-hook-form";
 
 interface FormTextInputProps extends React.ComponentProps<"input"> {
     label?: string;
     description?: string;
-    className?: string;
-    name: string;
-    control?: Control<any>;
-}
+} 
 
 const FormTextInput = forwardRef<HTMLInputElement, FormTextInputProps>(
-    ({ className, type, label, description, name, control, ...props }, ref) => {
-        const formContext = useFormContext();
-        const { register } = control || formContext;
-
+    ({ className, type, label, description, placeholder, ...props }, ref) => {
         return (
             <FormItem className={className}>
                 {label && <FormLabel>{label}</FormLabel>}
                 <FormControl>
                     <Input
                         type={type}
+                        ref={ref}
                         className="focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                        placeholder={props.placeholder || "Enter text..."}
-                        {...register(name)}
+                        placeholder={placeholder || "Enter text..."}
                         {...props}
                     />
                 </FormControl>
@@ -38,4 +30,4 @@ const FormTextInput = forwardRef<HTMLInputElement, FormTextInputProps>(
 
 FormTextInput.displayName = "FormTextInput";
 
-export default FormTextInput;
+export { FormTextInput };
