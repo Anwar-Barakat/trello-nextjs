@@ -4,7 +4,7 @@ import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 import { generateOrganizationRoutes } from '@/lib/routes'
-import { Organization } from '@/types/organization.type'
+import { Organization } from '@/types/organization.types'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { useMemo } from 'react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'

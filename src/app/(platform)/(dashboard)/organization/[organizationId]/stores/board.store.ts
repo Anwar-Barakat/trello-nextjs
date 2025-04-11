@@ -1,4 +1,4 @@
-import type { Board } from "@/types/board.type";
+import type { Board } from "@/types/board.types";
 import { create } from "zustand";
 
 // Removing persist middleware for now to simplify troubleshooting

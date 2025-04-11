@@ -9,7 +9,7 @@ import Link from "next/link"
 import { useMemo } from "react"
 import useSidebarStore from "../../stores/sidebar.store"
 import NavItem from "./nav-item"
-import { Organization } from "@/types/organization.type"
+import { Organization } from "@/types/organization.types"
 import { cn } from "@/lib/utils"
 
 type SidebarProps = {
