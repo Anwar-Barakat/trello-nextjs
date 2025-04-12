@@ -1,6 +1,6 @@
 'use client'
 
-import { useOrganizationLayout } from './hooks/useOrganizationLayout'
+import { useOrganizationLayout } from '@/hooks/organization/useOrganizationLayout'
 import MobileNavigation from './_components/mobile-navigation'
 import DesktopNavigation from './_components/desktop-navigation'
 
