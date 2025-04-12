@@ -6,7 +6,7 @@ import type { ApiResponse } from "@/types/api-response.types";
 /**
  * Higher-order function to wrap server actions with authentication
  */
-export function withAuth<T, P extends any[]>(
+export function withAuth<T, P extends unknown[]>(
   handler: (
     userId: string,
     orgId: string | null,

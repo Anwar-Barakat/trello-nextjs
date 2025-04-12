@@ -13,7 +13,7 @@ interface UseBoardOptions {
  */
 export const useBoard = ({ initialBoards }: UseBoardOptions) => {
   const router = useRouter();
-  const { boards, setBoards, setIsBoardDeleting } = useBoardStore();
+  const { boards, setBoards, setIsBoardDeleting, isLoading, setIsLoading } = useBoardStore();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,7 +26,7 @@ export const useBoard = ({ initialBoards }: UseBoardOptions) => {
   }, [initialBoards, setBoards]);
 
   // Filter boards based on search query
-  const filteredBoards = boards.filter((board) =>
+  const filteredBoards = isLoading ? [] : boards.filter((board) =>
     board.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -41,6 +41,7 @@ export const useBoard = ({ initialBoards }: UseBoardOptions) => {
         setError(null);
         setDeletingId(boardId);
         setIsBoardDeleting(true);
+        setIsLoading(true);
 
         const result = await deleteBoard(boardId);
 
@@ -60,9 +61,10 @@ export const useBoard = ({ initialBoards }: UseBoardOptions) => {
       } finally {
         setDeletingId(null);
         setIsBoardDeleting(false);
+        setIsLoading(false);
       }
     },
-    [boards, router, setBoards, setIsBoardDeleting]
+    [boards, router, setBoards, setIsBoardDeleting, setIsLoading]
   );
 
   return {
@@ -73,5 +75,6 @@ export const useBoard = ({ initialBoards }: UseBoardOptions) => {
     searchQuery,
     setSearchQuery,
     handleDeleteBoard,
+    isLoading,
   };
 };

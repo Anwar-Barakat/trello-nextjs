@@ -1,14 +1,16 @@
 'use server';
 
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import React from 'react'
+
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import type { Board } from '@/types/board.types';
 import BoardForm from '@/components/board/board-form';
 import BoardList from '@/components/board/board-list';
 import { listBoard } from '@/actions/board/list-board';
+import { redirect } from 'next/navigation';
+import { auth } from '@clerk/nextjs/server';
+import BoardHead from '@/components/board/board-head';
 
 interface OrganizationIdPageProps {
     params: {
@@ -20,8 +22,7 @@ interface OrganizationIdPageProps {
  * Organization settings page
  */
 const OrganizationIdPage = async ({ params }: OrganizationIdPageProps) => {
-    const { userId, orgId } = await auth();
-
+    const { userId } = await auth();
     // Authentication check
     if (!userId) {
         redirect('/sign-in');
@@ -33,22 +34,13 @@ const OrganizationIdPage = async ({ params }: OrganizationIdPageProps) => {
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-3xl font-bold tracking-tight">
-                        Organization Settings
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                        Manage your organization settings and preferences
-                    </CardDescription>
-                </CardHeader>
-
+                <BoardHead />
                 <CardContent>
                     <div className="grid gap-4">
                         <BoardForm />
                     </div>
                 </CardContent>
 
-                <Separator />
 
                 <CardContent>
                     <div className="grid gap-4">

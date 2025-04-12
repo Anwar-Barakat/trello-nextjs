@@ -6,6 +6,7 @@ import { useBoard } from '@/hooks/board/useBoard';
 import BoardItem from './board-item';
 import EmptyState from '@/components/global/empty-state';
 import BoardHeader from './board-header';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { Board } from '@/types/board.types';
 
 interface BoardListProps {
@@ -23,10 +24,31 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
         error,
         searchQuery,
         setSearchQuery,
-        handleDeleteBoard
+        handleDeleteBoard,
+        isLoading
     } = useBoard({
         initialBoards
     });
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <Skeleton className="h-8 w-[200px]" />
+                    <Skeleton className="h-8 w-[200px]" />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="flex flex-col gap-2">
+                            <Skeleton className="h-[100px] w-full" />
+                            <Skeleton className="h-4 w-[50px]" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     // Show empty state when no boards exist
     if (allBoards.length === 0) {
@@ -82,12 +104,15 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
 
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                 {boards.map((board) => (
-                    <BoardItem
-                        key={board.id}
-                        board={board}
-                        onDelete={handleDeleteBoard}
-                        isDeleting={deletingId === board.id}
-                    />
+                    <div key={board.id} className="flex flex-col gap-2">
+                        <BoardItem
+                            key={board.id}
+                            board={board}
+                            onDelete={handleDeleteBoard}
+                            isDeleting={deletingId === board.id}
+                        />
+                        <span>Free</span>
+                    </div>
                 ))}
             </div>
         </div>
