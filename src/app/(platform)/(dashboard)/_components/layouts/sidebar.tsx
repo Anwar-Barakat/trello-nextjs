@@ -7,9 +7,9 @@ import { useOrganization, useOrganizationList } from "@clerk/nextjs"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 import { useMemo } from "react"
-import useSidebarStore from "../../stores/sidebar.store"
+import { useSidebar } from "@/hooks/layout/useSidebar"
 import NavItem from "./nav-item"
-import { Organization } from "@/types/organization.type"
+import type { Organization } from "@/types/organization.types"
 import { cn } from "@/lib/utils"
 
 type SidebarProps = {
@@ -21,7 +21,7 @@ const Sidebar = ({
     storageKey = 't-sidebar-state',
     className
 }: SidebarProps) => {
-    const { expanded, onExpandMultiple } = useSidebarStore()
+    const { expanded, onExpandMultiple, isExpanded } = useSidebar()
     const { organization: activeOrganization, isLoaded: isOrgLoaded } = useOrganization()
     const { userMemberships, isLoaded: isOrgListLoaded } = useOrganizationList({
         userMemberships: {
@@ -50,7 +50,7 @@ const Sidebar = ({
                 </div>
                 <div className="space-y-2 px-2">
                     {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-x-2 p-2">
+                        <div key={`skeleton-${i}`} className="flex items-center gap-x-2 p-2">
                             <Skeleton className="h-5 w-5 rounded-full bg-[var(--sidebar-accent)]" />
                             <Skeleton className="h-4 flex-1 bg-[var(--sidebar-accent)]" />
                         </div>
@@ -90,7 +90,7 @@ const Sidebar = ({
                         <NavItem
                             key={organization.id}
                             isActive={activeOrganization?.id === organization.id}
-                            isExpanded={!!expanded[organization.id]}
+                            isExpanded={isExpanded(organization.id)}
                             organization={organization as Organization}
                             onExpand={handleExpand}
                         />

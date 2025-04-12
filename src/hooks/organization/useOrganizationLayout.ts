@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import useOrganizationIdStore from "../stores/organizationId.store";
+import useOrganizationStore from "@/stores/organization.store";
 
 /**
  * Custom hook for organization layout logic
@@ -16,7 +16,7 @@ export const useOrganizationLayout = () => {
     setIsMounted,
     setIsSheetOpen,
     setIsCollapsed,
-  } = useOrganizationIdStore();
+  } = useOrganizationStore();
 
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
