@@ -4,8 +4,8 @@ import React, { memo } from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useBoardForm } from '@/hooks/board/useBoardForm';
-import { FormTextInput } from '@/components/global';
-import { Card, CardContent } from '@/components/ui/card';
+import FormTextInput from '@/components/global/form-text-input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
 import GlobalTooltip from '@/components/global/tooltip';
 import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } from '@/constants/free.constants';
@@ -14,18 +14,40 @@ import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } f
  * Board creation form component
  */
 const BoardForm = () => {
-    const { form, onSubmit, error, isSubmitting } = useBoardForm();
+    const { form, onSubmit, errors, isSubmitting, isOpen, setIsOpen } = useBoardForm();
+
+    const formErrors = form.formState.errors;
+    const hasFormErrors = Object.keys(formErrors).length > 0;
+
+    const handleSubmit = (e: React.FormEvent) => {
+        if (hasFormErrors) {
+            e.preventDefault();
+            form.trigger();
+            return;
+        }
+        form.handleSubmit(onSubmit)(e);
+    };
 
     return (
-        <Card className="border-2 border-dashed border-muted hover:border-primary/50 transition-colors">
-            <CardContent className="pt-6">
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button
+                    variant="outline"
+                    className="w-auto w-fit border-2 border-dashed hover:border-primary/50 transition-colors"
+                    onClick={() => setIsOpen(true)}
+                >
+                    <div className="flex items-center gap-2 w-fit">
+                        <PlusCircle className="h-5 w-5 text-primary" />
+                        <span>Create New Board</span>
+                    </div>
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Create New Board</DialogTitle>
+                </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="flex items-center gap-2 mb-4">
-                            <PlusCircle className="h-5 w-5 text-primary" />
-                            <h3 className="text-lg font-semibold">Create New Board</h3>
-                        </div>
-
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <FormTextInput
                             control={form.control}
                             name="title"
@@ -35,11 +57,6 @@ const BoardForm = () => {
                             className="bg-background"
                         />
 
-                        {error && (
-                            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                                {error}
-                            </div>
-                        )}
 
                         <div className="flex items-center justify-between">
                             <Button
@@ -50,7 +67,7 @@ const BoardForm = () => {
                             >
                                 {isSubmitting ? 'Creating...' : 'Create Board'}
                             </Button>
-                            <GlobalTooltip 
+                            <GlobalTooltip
                                 content={FREE_BOARD_LIMIT}
                                 hint={FREE_BOARD_LIMIT_HINT}
                             >
@@ -61,8 +78,8 @@ const BoardForm = () => {
                         </div>
                     </form>
                 </Form>
-            </CardContent>
-        </Card>
+            </DialogContent>
+        </Dialog>
     );
 };
 

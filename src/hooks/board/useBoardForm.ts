@@ -10,47 +10,48 @@ import {
 } from "@/schemas/board.schema";
 import { createBoard } from "@/actions/board/create-board";
 
-/**
- * Custom hook for board form management
- */
 export const useBoardForm = () => {
   const router = useRouter();
-  const { setIsLoading, addBoard } = useBoardStore();
-  const [error, setError] = useState<string | null>(null);
+  const { setIsLoading, addBoard, setErrors: setStoreErrors } = useBoardStore();
+  const [errors, setErrors] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<BoardFormSchema>({
     resolver: zodResolver(boardFormSchema),
     defaultValues: boardDefaultValues,
+    mode: "onChange",
   });
 
-  /**
-   * Handle form submission
-   */
   const onSubmit = async (data: BoardFormSchema) => {
     try {
-      setError(null);
       setIsLoading(true);
+      setErrors([]);
+      setStoreErrors([]);
 
       const result = await createBoard(data);
 
       if (result.error) {
-        setError(result.error);
+        const errorMessage = result.error;
+        setErrors([errorMessage]);
+        setStoreErrors([errorMessage]);
         return;
       }
 
       if (result.data) {
-        // Update local state
         addBoard(result.data);
 
-        // Reset the form
         form.reset();
 
-        // Refresh the page
+        setIsOpen(false);
+
         router.refresh();
       }
     } catch (err) {
       console.error("Error creating board:", err);
-      setError(err instanceof Error ? err.message : "Failed to create board");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create board";
+      setErrors([errorMessage]);
+      setStoreErrors([errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +60,9 @@ export const useBoardForm = () => {
   return {
     form,
     onSubmit,
-    error,
+    errors,
     isSubmitting: form.formState.isSubmitting,
+    isOpen,
+    setIsOpen,
   };
 };
