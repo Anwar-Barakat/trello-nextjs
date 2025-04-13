@@ -1,6 +1,5 @@
 'use client';
 
-import React, { memo } from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useBoardForm } from '@/hooks/board/useBoardForm';
@@ -9,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { PlusCircle } from 'lucide-react';
 import GlobalTooltip from '@/components/global/tooltip';
 import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } from '@/constants/free.constants';
+import { memo } from 'react';
 
 /**
  * Board creation form component
@@ -26,6 +26,7 @@ const BoardForm = () => {
             return;
         }
         form.handleSubmit(onSubmit)(e);
+
     };
 
     return (

@@ -9,6 +9,7 @@ import {
   type BoardFormSchema,
 } from "@/schemas/board.schema";
 import { createBoard } from "@/actions/board/create-board";
+import { toast } from "sonner";
 
 export const useBoardForm = () => {
   const router = useRouter();
@@ -32,18 +33,22 @@ export const useBoardForm = () => {
 
       if (result.error) {
         const errorMessage = result.error;
-        setErrors([errorMessage]);
+        toast.error(errorMessage, {
+          duration: 4000,
+          position: "top-center",
+        });
         setStoreErrors([errorMessage]);
         return;
       }
 
       if (result.data) {
         addBoard(result.data);
-
         form.reset();
-
         setIsOpen(false);
-
+        toast.success("Board created successfully", {
+          duration: 4000,
+          position: "top-center",
+        });
         router.refresh();
       }
     } catch (err) {
@@ -51,6 +56,10 @@ export const useBoardForm = () => {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create board";
       setErrors([errorMessage]);
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-center",
+      });
       setStoreErrors([errorMessage]);
     } finally {
       setIsLoading(false);
