@@ -1,15 +1,14 @@
 "use client";
 
 import { UNSPLASH_COLLECTION_ID, UNSPLASH_IMAGE_COUNT } from "@/constants/unsplash.constants";
-import { unsplash } from "@/lib/unsplash";
 import { cn } from "@/lib/utils";
 import type { UnsplashImage } from "@/stores/slices/unsplash-slice";
 import useUnsplashStore from "@/stores/unsplash.store";
 import { Check, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { useUnsplashImages } from "@/hooks/unsplash/useUnsplashImages";
 
 interface UnsplashFormProps {
     id: string;
@@ -17,39 +16,9 @@ interface UnsplashFormProps {
 }
 
 export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
-    const { images, isLoading, error, setIsLoading, setError, setImages, selectedImageId, setSelectedImageId } = useUnsplashStore();
+    const { selectedImageId, setSelectedImageId } = useUnsplashStore();
+    const { images, isLoading, error, refetch } = useUnsplashImages();
     const { pending } = useFormStatus();
-
-    useEffect(() => {
-        const fetchImages = async () => {
-            try {
-                setIsLoading(true);
-                const result = await unsplash.photos.getRandom({
-                    collectionIds: [UNSPLASH_COLLECTION_ID],
-                    count: UNSPLASH_IMAGE_COUNT,
-                });
-
-                if (result?.response) {
-                    // Convert to array if response is a single object
-                    const imagesArray = Array.isArray(result.response)
-                        ? result.response as UnsplashImage[]
-                        : [result.response as UnsplashImage];
-
-                    console.log("Fetched images:", imagesArray);
-                    setImages(imagesArray);
-                } else {
-                    setError("Failed to fetch images");
-                }
-            } catch (error) {
-                console.error("Error fetching images:", error);
-                setError("Failed to fetch images");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchImages();
-    }, [setIsLoading, setError, setImages]);
 
     if (isLoading) {
         return (
@@ -65,7 +34,7 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
                 {error}
                 <Button
                     type="button"
-                    onClick={() => window.location.reload()}
+                    onClick={refetch}
                     className="ml-2 underline text-blue-500"
                 >
                     Retry
@@ -86,8 +55,9 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
         <div className="relative">
             <div className="grid grid-cols-3 gap-4">
                 {images?.length > 0 && images?.map((image) => (
-                    <div
+                    <button
                         key={image.id}
+                        type="button"
                         className={cn(
                             "relative h-24 w-full rounded-md overflow-hidden cursor-pointer transition-all",
                             selectedImageId === image.id && "ring-2 ring-blue-500 scale-105",
@@ -102,8 +72,6 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
                                 setSelectedImageId(image.id);
                             }
                         }}
-                        role="button"
-                        tabIndex={0}
                         aria-label={`Select image by ${image.user.name}`}
                         aria-pressed={selectedImageId === image.id}
                     >
@@ -121,7 +89,7 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </button>
                 ))}
             </div>
             <input
