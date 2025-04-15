@@ -1,6 +1,6 @@
 import { AppError } from "@/types/error.types";
 import { prisma } from "../lib/prisma";
-import type { BoardFormSchema } from "@/app/(platform)/(dashboard)/organization/[organizationId]/schema";
+import type { BoardFormSchema } from "@/schemas/board.schema";
 
 export const BoardService = {
   /**

@@ -9,6 +9,7 @@ import { PlusCircle } from 'lucide-react';
 import GlobalTooltip from '@/components/global/tooltip';
 import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } from '@/constants/free.constants';
 import { memo } from 'react';
+import { UnsplashForm } from './unsplash-form';
 
 /**
  * Board creation form component
@@ -49,6 +50,7 @@ const BoardForm = () => {
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        <UnsplashForm id="image" errors={formErrors} />
                         <FormTextInput
                             control={form.control}
                             name="title"
