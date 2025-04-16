@@ -12,6 +12,10 @@ export const BoardService = {
         data: {
           title: data.title,
           organizationId,
+          imageId: data.imageId,
+          imageThumbUrl: data.imageThumbUrl,
+          imageFullUrl: data.imageFullUrl,
+          imageUserName: data.imageUserName,
         },
       });
 
@@ -56,6 +60,10 @@ export const BoardService = {
           id: true,
           title: true,
           organizationId: true,
+          imageId: true,
+          imageThumbUrl: true,
+          imageFullUrl: true,
+          imageUserName: true,
           createdAt: true,
           updatedAt: true,
         },

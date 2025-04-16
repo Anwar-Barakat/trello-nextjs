@@ -18,16 +18,10 @@ const BoardForm = () => {
     const { form, onSubmit, errors, isSubmitting, isOpen, setIsOpen } = useBoardForm();
 
     const formErrors = form.formState.errors;
-    const hasFormErrors = Object.keys(formErrors).length > 0;
 
     const handleSubmit = (e: React.FormEvent) => {
-        if (hasFormErrors) {
-            e.preventDefault();
-            form.trigger();
-            return;
-        }
+        e.preventDefault();
         form.handleSubmit(onSubmit)(e);
-
     };
 
     return (
@@ -44,13 +38,14 @@ const BoardForm = () => {
                     </div>
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Create New Board</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <UnsplashForm id="image" errors={formErrors} />
+                        <UnsplashForm id="image" />
+
                         <FormTextInput
                             control={form.control}
                             name="title"
@@ -60,6 +55,13 @@ const BoardForm = () => {
                             className="bg-background"
                         />
 
+                        {errors.length > 0 && (
+                            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+                                {errors.map((error) => (
+                                    <p key={error}>{error}</p>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="flex items-center justify-between">
                             <Button
