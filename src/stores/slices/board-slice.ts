@@ -6,6 +6,7 @@ export interface BoardState {
   isLoading: boolean;
   isBoardDeleting: boolean;
   errors: string[];
+  isOpenModal: boolean;
 }
 
 export interface BoardActions {
@@ -15,16 +16,18 @@ export interface BoardActions {
   setIsLoading: (isLoading: boolean) => void;
   setIsBoardDeleting: (isBoardDeleting: boolean) => void;
   setErrors: (errors: string[]) => void;
+  setIsOpenModal: (isOpen: boolean) => void;
 }
 
-export type BoardSlice = BoardState & BoardActions;
-
-export const createBoardSlice: StateCreator<BoardSlice> = (set) => ({
+export const createBoardSlice: StateCreator<BoardState & BoardActions> = (
+  set
+) => ({
   // Initial State
   boards: [],
   isLoading: false,
   isBoardDeleting: false,
   errors: [],
+  isOpenModal: false,
   // Actions
   setBoards: (boards) => set({ boards }),
 
@@ -43,4 +46,6 @@ export const createBoardSlice: StateCreator<BoardSlice> = (set) => ({
   setIsBoardDeleting: (isBoardDeleting) => set({ isBoardDeleting }),
 
   setErrors: (errors) => set({ errors }),
+
+  setIsOpenModal: (isOpenModal) => set({ isOpenModal }),
 });

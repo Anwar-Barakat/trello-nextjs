@@ -11,13 +11,18 @@ import {
 } from "@/schemas/board.schema";
 import { createBoard } from "@/actions/board/create-board";
 import { toast } from "sonner";
+import type { Board } from "@/types/board.types";
 
 export const useBoardForm = () => {
   const router = useRouter();
-  const { setIsLoading, addBoard, setErrors: setStoreErrors } = useBoardStore();
+  const {
+    setIsLoading,
+    addBoard,
+    setErrors: setStoreErrors,
+    setIsOpenModal,
+  } = useBoardStore();
   const { selectedImageId } = useUnsplashStore();
   const [errors, setErrors] = useState<string[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<BoardFormSchema>({
     resolver: zodResolver(boardFormSchema),
@@ -47,8 +52,8 @@ export const useBoardForm = () => {
 
       const result = await createBoard(formData);
 
-      if (result.error) {
-        const errorMessage = result.error;
+      if ("error" in result) {
+        const errorMessage = result.error || "An unknown error occurred";
         toast.error(errorMessage, {
           duration: 4000,
           position: "top-center",
@@ -58,10 +63,10 @@ export const useBoardForm = () => {
         return;
       }
 
-      if (result.data) {
+      if ("data" in result) {
         addBoard(result.data);
         form.reset();
-        setIsOpen(false);
+        setIsOpenModal(false);
         toast.success("Board created successfully", {
           duration: 4000,
           position: "top-center",
@@ -88,7 +93,5 @@ export const useBoardForm = () => {
     onSubmit,
     errors,
     isSubmitting: form.formState.isSubmitting,
-    isOpen,
-    setIsOpen,
   };
 };

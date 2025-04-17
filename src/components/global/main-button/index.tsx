@@ -1,10 +1,10 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import type { ButtonVariantProps } from '@/components/ui/button'
+import type { ButtonProps } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
-interface MainButtonProps extends ButtonVariantProps {
+interface MainButtonProps extends Omit<ButtonProps, 'variant' | 'size'> {
   href?: string
   className?: string
   children?: React.ReactNode
