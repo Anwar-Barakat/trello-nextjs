@@ -1,6 +1,6 @@
 import { AppError } from "@/types/error.types";
 import { prisma } from "../lib/prisma";
-import type { BoardFormSchema } from "@/app/(platform)/(dashboard)/organization/[organizationId]/schema";
+import type { BoardFormSchema } from "@/schemas/board.schema";
 
 export const BoardService = {
   /**
@@ -12,6 +12,10 @@ export const BoardService = {
         data: {
           title: data.title,
           organizationId,
+          imageId: data.imageId,
+          imageThumbUrl: data.imageThumbUrl,
+          imageFullUrl: data.imageFullUrl,
+          imageUserName: data.imageUserName,
         },
       });
 
@@ -56,6 +60,10 @@ export const BoardService = {
           id: true,
           title: true,
           organizationId: true,
+          imageId: true,
+          imageThumbUrl: true,
+          imageFullUrl: true,
+          imageUserName: true,
           createdAt: true,
           updatedAt: true,
         },

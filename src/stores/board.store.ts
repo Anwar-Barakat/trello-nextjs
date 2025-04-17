@@ -16,7 +16,8 @@ const useBoardStore = create<BoardSlice>()(
 
 export const useBoards = () => useBoardStore((state) => state.boards);
 export const useIsLoading = () => useBoardStore((state) => state.isLoading);
-export const useIsBoardDeleting = () =>
-  useBoardStore((state) => state.isBoardDeleting);
+export const useIsBoardDeleting = () => useBoardStore((state) => state.isBoardDeleting);
+export const useErrors = () => useBoardStore((state) => state.errors);
+export const useSetErrors = () => useBoardStore((state) => state.setErrors);
 
 export default useBoardStore;

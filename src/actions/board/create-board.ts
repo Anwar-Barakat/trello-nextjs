@@ -1,38 +1,89 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { BoardService } from "@/services/board.service";
 import { handleServerError } from "@/utils/error.utils";
 import { createSuccessResponse } from "@/utils/api.utils";
+import { boardFormSchema, type BoardFormSchema } from "@/schemas/board.schema";
+import { prisma } from "@/lib/prisma";
+import { unsplash } from "@/lib/unsplash";
 import type { Board } from "@/types/board.types";
-import { ERROR_CODES } from "@/constants/error.constants";
-import { withAuth } from "@/middlewares/with-auth";
-import type { BoardFormSchema } from "@/schemas/board.schema";
 
-/**
- * Server action to create a new board with auth middleware
- */
-export const createBoard = withAuth(
-  async (userId, orgId, data: BoardFormSchema) => {
-    if (!orgId) {
-      return {
-        error: "Organization ID is required",
-        code: ERROR_CODES.UNAUTHORIZED,
-        status: 400,
-      };
-    }
+export const createBoard = async (data: BoardFormSchema) => {
+  const { orgId, userId } = await auth();
 
-    try {
-      // Create board in database
-      const board = await BoardService.create(data, orgId);
-
-      // Revalidate cache
-      revalidatePath(`/organization/${orgId}`);
-
-      // Return success
-      return createSuccessResponse(board as Board);
-    } catch (error) {
-      return handleServerError(error);
-    }
+  if (!userId || !orgId) {
+    return {
+      error: "Unauthorized",
+      code: "UNAUTHORIZED",
+      status: 401,
+    };
   }
-);
+
+  // Validate the form data
+  const validationResult = boardFormSchema.safeParse(data);
+  if (!validationResult.success) {
+    const errorMessage =
+      validationResult.error.errors[0]?.message || "Invalid form data";
+    return {
+      error: errorMessage,
+      code: "VALIDATION_ERROR",
+      status: 400,
+    };
+  }
+
+  try {
+    // Get image details from Unsplash if an image ID is provided
+    let imageDetails = null;
+    if (data.image) {
+      try {
+        const imageResponse = await unsplash.photos.get({
+          photoId: data.image,
+        });
+        if (imageResponse?.response) {
+          imageDetails = {
+            imageId: imageResponse.response.id,
+            imageThumbUrl: imageResponse.response.urls.thumb,
+            imageFullUrl: imageResponse.response.urls.full,
+            imageUserName: imageResponse.response.user.name,
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching image details:", error);
+        // Continue with board creation even if image fetch fails
+      }
+    }
+
+    // Create board in database
+    const board = await prisma.board.create({
+      data: {
+        title: data.title,
+        organizationId: orgId,
+        imageId: imageDetails?.imageId,
+        imageThumbUrl: imageDetails?.imageThumbUrl,
+        imageFullUrl: imageDetails?.imageFullUrl,
+        imageUserName: imageDetails?.imageUserName,
+      },
+    });
+
+    // Trigger Unsplash download event (for attribution)
+    if (imageDetails?.imageId) {
+      try {
+        await unsplash.photos.trackDownload({
+          downloadLocation: `https://api.unsplash.com/photos/${imageDetails.imageId}/download`,
+        });
+      } catch (error) {
+        // Just log error, don't fail the board creation
+        console.error("Error tracking Unsplash download:", error);
+      }
+    }
+
+    // Revalidate cache
+    revalidatePath(`/organization/${orgId}`);
+
+    // Return success
+    return createSuccessResponse(board as Board);
+  } catch (error) {
+    return handleServerError(error);
+  }
+};

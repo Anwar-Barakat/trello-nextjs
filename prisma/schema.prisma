@@ -8,9 +8,13 @@ datasource db {
 }
 
 model Board {
-  id             String @id @default(uuid())
+  id             String   @id @default(uuid())
   title          String
   organizationId String
+  imageId        String?  // Store Unsplash image ID
+  imageThumbUrl  String?  // Store thumbnail URL
+  imageFullUrl   String?  // Store full URL
+  imageUserName  String?  // Store image creator's name for attribution
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

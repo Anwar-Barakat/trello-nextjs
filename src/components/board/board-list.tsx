@@ -111,7 +111,6 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
                             onDelete={handleDeleteBoard}
                             isDeleting={deletingId === board.id}
                         />
-                        <span>Free</span>
                     </div>
                 ))}
             </div>
