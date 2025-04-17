@@ -1,8 +1,8 @@
 import { Logo, MainButton } from '@/components/global'
-import { Button } from '@/components/ui/button'
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs'
 import { Plus } from 'lucide-react'
 import React from 'react'
+import BoardForm from '@/components/board/board-form' // Update with the correct path
 
 const Navbar = () => {
     return (
@@ -12,20 +12,29 @@ const Navbar = () => {
                     <Logo />
                 </div>
 
-                <MainButton 
-                    variant='ghost' 
-                    size='sm' 
-                    className='rounded-md hidden md:flex h-9 px-3 gap-1.5 transition-colors hover:bg-accent hover:text-accent-foreground'
-                >
-                    <Plus className='h-4 w-4' />
-                    <span className='font-medium'>Create</span>
-                </MainButton>
-                <MainButton 
-                    size='icon' 
-                    className='rounded-md md:hidden h-9 w-9 transition-colors hover:bg-accent hover:text-accent-foreground'
-                >
-                    <Plus className='h-4 w-4' />
-                </MainButton>
+                {/* Use BoardForm with custom trigger */}
+                <BoardForm
+                    trigger={
+                        <>
+                            {/* Desktop version */}
+                            <MainButton
+                                variant='ghost'
+                                size='sm'
+                                className='rounded-md hidden md:flex h-9 px-3 gap-1.5 transition-colors hover:bg-accent hover:text-accent-foreground'
+                            >
+                                <Plus className='h-4 w-4' />
+                                <span className='font-medium'>Create</span>
+                            </MainButton>
+                            {/* Mobile version */}
+                            <MainButton
+                                size='icon'
+                                className='rounded-md md:hidden h-9 w-9 transition-colors hover:bg-accent hover:text-accent-foreground'
+                            >
+                                <Plus className='h-4 w-4' />
+                            </MainButton>
+                        </>
+                    }
+                />
             </div>
 
             <div className='ml-auto flex items-center gap-x-2 md:gap-x-3'>

@@ -8,13 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { PlusCircle } from 'lucide-react';
 import GlobalTooltip from '@/components/global/tooltip';
 import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } from '@/constants/free.constants';
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { UnsplashForm } from './unsplash-form';
 
 /**
  * Board creation form component
  */
-const BoardForm = () => {
+const BoardForm = ({ trigger }: { trigger?: ReactNode }) => {
     const { form, onSubmit, errors, isSubmitting, isOpen, setIsOpen } = useBoardForm();
 
     const formErrors = form.formState.errors;
@@ -27,16 +27,31 @@ const BoardForm = () => {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button
-                    variant="outline"
-                    className="w-auto w-fit border-2 border-dashed hover:border-primary/50 transition-colors"
-                    onClick={() => setIsOpen(true)}
-                >
-                    <div className="flex items-center gap-2 w-fit">
-                        <PlusCircle className="h-5 w-5 text-primary" />
-                        <span>Create New Board</span>
-                    </div>
-                </Button>
+                {trigger ? (
+                    <button
+                        type="button"
+                        onClick={() => setIsOpen(true)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                setIsOpen(true);
+                            }
+                        }}
+                        className="w-full"
+                    >
+                        {trigger}
+                    </button>
+                ) : (
+                    <Button
+                        variant="outline"
+                        className="w-auto w-fit border-2 border-dashed hover:border-primary/50 transition-colors"
+                        onClick={() => setIsOpen(true)}
+                    >
+                        <div className="flex items-center gap-2 w-fit">
+                            <PlusCircle className="h-5 w-5 text-primary" />
+                            <span>Create New Board</span>
+                        </div>
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="max-w-3xl">
                 <DialogHeader>

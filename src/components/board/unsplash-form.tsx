@@ -1,8 +1,6 @@
 "use client";
 
-import { UNSPLASH_COLLECTION_ID, UNSPLASH_IMAGE_COUNT } from "@/constants/unsplash.constants";
 import { cn } from "@/lib/utils";
-import type { UnsplashImage } from "@/stores/slices/unsplash-slice";
 import useUnsplashStore from "@/stores/unsplash.store";
 import { Check, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -10,7 +8,7 @@ import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { useUnsplashImages } from "@/hooks/unsplash/useUnsplashImages";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Controller, useFormContext } from "react-hook-form";
+import {  useFormContext } from "react-hook-form";
 
 interface UnsplashFormProps {
     id: string;
