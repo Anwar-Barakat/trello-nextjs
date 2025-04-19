@@ -8,6 +8,7 @@ import EmptyState from '@/components/global/empty-state';
 import BoardHeader from './board-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Board } from '@/types/board.types';
+import Link from 'next/link';
 
 interface BoardListProps {
     initialBoards: Board[];
@@ -104,14 +105,14 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
 
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                 {boards.map((board) => (
-                    <div key={board.id} className="flex flex-col gap-2">
+                    <Link key={board.id} href={`/board/${board.id}`} className="flex flex-col gap-2">
                         <BoardItem
                             key={board.id}
                             board={board}
                             onDelete={handleDeleteBoard}
                             isDeleting={deletingId === board.id}
                         />
-                    </div>
+                    </Link>
                 ))}
             </div>
         </div>
