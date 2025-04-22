@@ -1,4 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs"
+import { Providers } from "@/app/providers"
 
 type PlatformLayoutProps = {
     children: React.ReactNode
@@ -7,7 +8,9 @@ type PlatformLayoutProps = {
 const PlatformLayout = ({ children }: PlatformLayoutProps) => {
     return (
         <ClerkProvider>
-            {children}
+            <Providers>
+                {children}
+            </Providers>
         </ClerkProvider>
     )
 }

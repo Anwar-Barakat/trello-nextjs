@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { notFound, redirect } from "next/navigation"
+import BoardNavbar from "./_components/board-navbar"
 
 type BoardIdLayoutProps = {
     children: React.ReactNode
@@ -43,7 +44,10 @@ const BoardIdLayout = async ({ children, params }: BoardIdLayoutProps) => {
                 backgroundPosition: "center",
                 backgroundAttachment: "fixed"
             }}>
-            {children}
+            <BoardNavbar board={board} />
+            <main className="relative pt-28 h-full">
+
+            </main>
         </div>
     )
 }
