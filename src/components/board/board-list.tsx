@@ -8,7 +8,6 @@ import EmptyState from '@/components/global/empty-state';
 import BoardHeader from './board-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Board } from '@/types/board.types';
-import Link from 'next/link';
 
 interface BoardListProps {
     initialBoards: Board[];
@@ -26,7 +25,9 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
         searchQuery,
         setSearchQuery,
         handleDeleteBoard,
-        isLoading
+        handleEditBoard,
+        isLoading,
+        isBoardEditing
     } = useBoard({
         initialBoards
     });
@@ -41,7 +42,7 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                     {[...Array(6)].map((_, i) => (
-                        <div key={i} className="flex flex-col gap-2">
+                        <div key={`skeleton-${i}`} className="flex flex-col gap-2">
                             <Skeleton className="h-[100px] w-full" />
                             <Skeleton className="h-4 w-[50px]" />
                         </div>
@@ -104,15 +105,15 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
             )}
 
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {boards.map((board) => (
-                    <Link key={board.id} href={`/board/${board.id}`} className="flex flex-col gap-2">
-                        <BoardItem
-                            key={board.id}
-                            board={board}
-                            onDelete={handleDeleteBoard}
-                            isDeleting={deletingId === board.id}
-                        />
-                    </Link>
+                {boards.map((board: Board) => (
+                    <BoardItem
+                        key={board.id}
+                        board={board}
+                        onDelete={handleDeleteBoard}
+                        isDeleting={deletingId === board.id}
+                        onEdit={handleEditBoard}
+                        isEditing={isBoardEditing}
+                    />
                 ))}
             </div>
         </div>

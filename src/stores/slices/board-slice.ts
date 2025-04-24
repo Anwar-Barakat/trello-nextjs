@@ -5,6 +5,7 @@ export interface BoardState {
   boards: Board[];
   isLoading: boolean;
   isBoardDeleting: boolean;
+  isBoardEditing: boolean;
   errors: string[];
   isOpenModal: boolean;
 }
@@ -12,9 +13,11 @@ export interface BoardState {
 export interface BoardActions {
   setBoards: (boards: Board[]) => void;
   addBoard: (board: Board) => void;
+  updateBoard: (updatedBoard: Board) => void;
   removeBoard: (boardId: string) => void;
   setIsLoading: (isLoading: boolean) => void;
   setIsBoardDeleting: (isBoardDeleting: boolean) => void;
+  setIsBoardEditing: (isBoardEditing: boolean) => void;
   setErrors: (errors: string[]) => void;
   setIsOpenModal: (isOpen: boolean) => void;
 }
@@ -26,6 +29,7 @@ export const createBoardSlice: StateCreator<BoardState & BoardActions> = (
   boards: [],
   isLoading: false,
   isBoardDeleting: false,
+  isBoardEditing: false,
   errors: [],
   isOpenModal: false,
   // Actions
@@ -36,6 +40,13 @@ export const createBoardSlice: StateCreator<BoardState & BoardActions> = (
       boards: [board, ...state.boards],
     })),
 
+  updateBoard: (updatedBoard) =>
+    set((state) => ({
+      boards: state.boards.map((board) =>
+        board.id === updatedBoard.id ? updatedBoard : board
+      ),
+    })),
+
   removeBoard: (boardId) =>
     set((state) => ({
       boards: state.boards.filter((board) => board.id !== boardId),
@@ -44,6 +55,8 @@ export const createBoardSlice: StateCreator<BoardState & BoardActions> = (
   setIsLoading: (isLoading) => set({ isLoading }),
 
   setIsBoardDeleting: (isBoardDeleting) => set({ isBoardDeleting }),
+
+  setIsBoardEditing: (isBoardEditing) => set({ isBoardEditing }),
 
   setErrors: (errors) => set({ errors }),
 
