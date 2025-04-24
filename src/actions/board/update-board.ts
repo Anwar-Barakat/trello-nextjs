@@ -14,7 +14,7 @@ export const updateBoard = async (id: string, data: { title: string }) => {
   const board = await prisma.board.update({
     where: {
       id,
-      orgId,
+      organizationId: orgId,
     },
     data: {
       title: data.title,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -13,7 +13,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { TrashIcon } from 'lucide-react';
+import { TrashIcon, PencilIcon } from 'lucide-react';
 import type { Board } from '@/types/board.types';
 import Image from 'next/image';
 import { DEFAULT_UNSPLASH_IMAGE } from '@/constants/unsplash.constants';
@@ -21,7 +21,9 @@ import { DEFAULT_UNSPLASH_IMAGE } from '@/constants/unsplash.constants';
 interface BoardItemProps {
     board: Board;
     onDelete: (boardId: string) => void;
+    onEdit: (boardId: string, newTitle: string) => void;
     isDeleting: boolean;
+    isEditing: boolean;
 }
 
 /**
@@ -30,10 +32,22 @@ interface BoardItemProps {
 const BoardItem = ({
     board,
     onDelete,
-    isDeleting
+    onEdit,
+    isDeleting,
+    isEditing
 }: BoardItemProps) => {
     const imageUrl = board.imageThumbUrl || DEFAULT_UNSPLASH_IMAGE;
     const attribution = board.imageUserName ? `Photo by ${board.imageUserName}` : '';
+    const [editedTitle, setEditedTitle] = useState(board.title);
+
+    const handleEdit = (
+        boardId: string,
+        newTitle: string
+    ) => {
+        if (newTitle.trim() && newTitle !== board.title) {
+            onEdit(boardId, newTitle.trim());
+        }
+    };
 
     return (
         <div className="group relative rounded-xl overflow-hidden border bg-card hover:shadow-lg transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-1 shadow-sm">
@@ -60,42 +74,83 @@ const BoardItem = ({
                     <h3 className="font-medium truncate text-sm hover:text-primary transition-colors px-1">
                         {board.title}
                     </h3>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out h-7 w-7 -mr-1 hover:bg-destructive/10 hover:text-destructive"
-                                aria-label="Delete board"
-                            >
-                                <TrashIcon className="h-[0.95rem] w-[0.95rem]" />
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="max-w-[95vw] rounded-xl sm:max-w-md">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle className="text-left">Confirm Deletion</AlertDialogTitle>
-                                <AlertDialogDescription className="text-muted-foreground/80">
-                                    This will permanently remove <span className="font-medium text-foreground">{board.title}</span> and all its content.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="flex-row justify-end gap-2">
-                                <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() => onDelete(board.id)}
-                                    disabled={isDeleting}
-                                    variant="destructive"
-                                    className="rounded-lg"
+                    <div className="flex gap-1">
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out h-7 w-7 -mr-1 hover:bg-primary/10 hover:text-primary"
+                                    aria-label="Edit board title"
                                 >
-                                    {isDeleting ? (
-                                        <span className="flex items-center gap-1.5">
-                                            <span className="animate-spin">🌀</span>
-                                            Deleting...
-                                        </span>
-                                    ) : 'Confirm Delete'}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                                    <PencilIcon className="h-[0.95rem] w-[0.95rem]" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-[95vw] rounded-xl sm:max-w-md">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-left">Edit Board Title</AlertDialogTitle>
+                                </AlertDialogHeader>
+                                <div className="space-y-4">
+                                    <input
+                                        type="text"
+                                        value={editedTitle}
+                                        onChange={(e) => setEditedTitle(e.target.value)}
+                                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                    />
+                                </div>
+                                <AlertDialogFooter className="flex-row justify-end gap-2">
+                                    <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => handleEdit(board.id, editedTitle)}
+                                        disabled={isEditing}
+                                        className="rounded-lg"
+                                    >
+                                        {isEditing ? (
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="animate-spin">🌀</span>
+                                                Saving...
+                                            </span>
+                                        ) : 'Save Changes'}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out h-7 w-7 -mr-1 hover:bg-destructive/10 hover:text-destructive"
+                                    aria-label="Delete board"
+                                >
+                                    <TrashIcon className="h-[0.95rem] w-[0.95rem]" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-[95vw] rounded-xl sm:max-w-md">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-left">Confirm Deletion</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-muted-foreground/80">
+                                        This will permanently remove <span className="font-medium text-foreground">{board.title}</span> and all its content.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="flex-row justify-end gap-2">
+                                    <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => onDelete(board.id)}
+                                        disabled={isDeleting}
+                                        className="rounded-lg"
+                                    >
+                                        {isDeleting ? (
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="animate-spin">🌀</span>
+                                                Deleting...
+                                            </span>
+                                        ) : 'Confirm Delete'}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 </div>
             </div>
         </div>

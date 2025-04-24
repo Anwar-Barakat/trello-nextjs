@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
-import { ArrowLeftIcon } from "lucide-react"
-import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 
 interface BoardIdPageProps {
