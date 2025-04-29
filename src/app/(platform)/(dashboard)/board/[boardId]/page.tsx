@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { notFound, redirect } from "next/navigation"
+import ListContainer from "./_components/list-container"
+import fetchBoardList from "@/actions/list/fetch-board-list"
 
 interface BoardIdPageProps {
     params: {
@@ -18,7 +20,6 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
     const board = await prisma.board.findUnique({
         where: {
             id: params.boardId,
-            organizationId: orgId,
         },
     })
 
@@ -26,10 +27,11 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
         notFound()
     }
 
-    console.log(board)
+    const lists = await fetchBoardList(params.boardId)
 
     return (
-        <div className="relative min-h-screen bg-no-repeat bg-cover bg-center bg-fixed overflow-hidden">
+        <div className="">
+            <ListContainer boardId={params.boardId} lists={lists} />
         </div>
     )
 }

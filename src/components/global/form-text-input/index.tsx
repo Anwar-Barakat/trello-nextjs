@@ -1,40 +1,53 @@
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { forwardRef } from "react";
-import type { Control } from "react-hook-form";
+import type { Control, FieldValues, Path } from "react-hook-form";
+import { useController } from "react-hook-form";
+import { Input } from "@/components/ui/input";
 
-interface FormTextInputProps extends React.ComponentProps<"input"> {
+interface FormTextInputProps<T extends FieldValues> extends React.ComponentProps<"input"> {
     label?: string;
     description?: string;
     className?: string;
-    name: string;
-    control: Control<any>;
+    name: Path<T>;
+    control: Control<T>;
+    error?: string;
 }
 
-const FormTextInput = forwardRef<HTMLInputElement, FormTextInputProps>(
-    ({ className, type, label, description, name, control, ...props }, ref) => {
+const FormTextInput = forwardRef<HTMLInputElement, FormTextInputProps<any>>(
+    ({ className, type, label, description, name, control, error, ...props }, ref) => {
+        const { field, fieldState } = useController({
+            name,
+            control,
+        });
+
         return (
-            <FormField
-                control={control}
-                name={name}
-                render={({ field, fieldState }) => (
-                    <FormItem className={className}>
-                        {label && <FormLabel>{label}</FormLabel>}
-                        <FormControl>
-                            <Input
-                                {...field}
-                                type={type}
-                                className="focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                                placeholder={props.placeholder || "Enter text..."}
-                                disabled={props.disabled}
-                                ref={ref}
-                            />
-                        </FormControl>
-                        {description && <FormDescription>{description}</FormDescription>}
-                        <FormMessage className="text-xs" />
-                    </FormItem>
+            <div className={`space-y-2 ${className}`}>
+                {label && (
+                    <label
+                        htmlFor={name}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        {label}
+                    </label>
                 )}
-            />
+                <Input
+                    {...field}
+                    {...props}
+                    id={name}
+                    ref={ref}
+                    type={type}
+                    className={`focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${props.className || ""}`}
+                    placeholder={props.placeholder || "Enter text..."}
+                    aria-invalid={!!fieldState.error}
+                />
+                {description && (
+                    <p className="text-xs text-muted-foreground">{description}</p>
+                )}
+                {(fieldState.error || error) && (
+                    <p className="text-xs text-destructive">
+                        {fieldState.error?.message || error}
+                    </p>
+                )}
+            </div>
         );
     }
 );
