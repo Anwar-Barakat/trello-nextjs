@@ -3,11 +3,22 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { handleServerError } from "@/utils/error.utils";
-import { cardReorderSchema, type CardReorderSchema } from "@/schemas/card.schema";
 import { CardService } from "@/services/card.service";
 import { prisma } from "@/lib/prisma";
+import { ENTITY_TYPE, AuditLogAction } from "@prisma/client";
+import { createAuditLog } from "@/actions/audit-log/create-audit-log";
 
-export const reorderCard = async (data: CardReorderSchema) => {
+interface ReorderCardProps {
+  cardId: string;
+  listId: string;
+  newOrder: number;
+}
+
+export const reorderCard = async ({
+  cardId,
+  listId,
+  newOrder,
+}: ReorderCardProps) => {
   const { orgId, userId } = await auth();
 
   if (!userId || !orgId) {
@@ -19,76 +30,53 @@ export const reorderCard = async (data: CardReorderSchema) => {
     };
   }
 
-  // Validate the list exists and belongs to the user's organization
-  const list = await prisma.list.findFirst({
-    where: {
-      id: data.listId,
-      board: {
-        organizationId: orgId,
-      },
-    },
-    include: {
-      board: {
-        select: {
-          id: true,
+  try {
+    // Validate the card exists and belongs to this organization
+    const card = await prisma.card.findFirst({
+      where: {
+        id: cardId,
+        listId,
+        list: {
+          board: {
+            organizationId: orgId,
+          },
         },
       },
-    },
-  });
+      include: {
+        list: {
+          select: {
+            boardId: true,
+          },
+        },
+      },
+    });
 
-  if (!list) {
-    return {
-      success: false,
-      message: "List not found or you don't have access",
-      code: "NOT_FOUND",
-      status: 404,
-    };
-  }
+    if (!card) {
+      return {
+        success: false,
+        message: "Card not found or you don't have access",
+        code: "NOT_FOUND",
+        status: 404,
+      };
+    }
 
-  // Validate the card exists
-  const card = await prisma.card.findUnique({
-    where: {
-      id: data.cardId,
-    },
-  });
+    // Perform the reordering
+    await CardService.reorder(cardId, listId, newOrder);
 
-  if (!card) {
-    return {
-      success: false,
-      message: "Card not found",
-      code: "NOT_FOUND",
-      status: 404,
-    };
-  }
+    // Create an audit log entry with string values instead of enums
+    await createAuditLog({
+      entityId: cardId,
+      entityType: "CARD",
+      action: "UPDATE",
+      organizationId: orgId,
+    });
 
-  // Validate the form data
-  const validationResult = cardReorderSchema.safeParse(data);
-
-  if (!validationResult.success) {
-    const errorMessage =
-      validationResult.error.errors[0]?.message || "Invalid form data";
-    return {
-      success: false,
-      message: errorMessage,
-      code: "VALIDATION_ERROR",
-      status: 400,
-    };
-  }
-
-  try {
-    const updatedCard = await CardService.reorder(
-      data.cardId,
-      data.listId,
-      data.newOrder
-    );
-
-    // Revalidate cache
-    revalidatePath(`/board/${list.board.id}`);
+    // Revalidate the board page to reflect changes
+    revalidatePath(`/board/${card.list.boardId}`);
 
     return {
       success: true,
       message: "Card reordered successfully",
-      data: updatedCard,
     };
   } catch (error) {
     return handleServerError(error);

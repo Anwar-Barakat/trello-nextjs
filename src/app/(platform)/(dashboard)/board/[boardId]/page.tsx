@@ -1,39 +1,65 @@
-import { prisma } from "@/lib/prisma"
-import { auth } from "@clerk/nextjs/server"
-import { notFound, redirect } from "next/navigation"
-import ListContainer from "./_components/list-container"
-import fetchBoardList from "@/actions/list/fetch-board-list"
+import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
+import { notFound, redirect } from "next/navigation";
+import ListContainer from "./_components/list-container";
+import fetchBoardList from "@/actions/list/fetch-board-list";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import BoardHeader from "@/components/board/board-header";
 
 interface BoardIdPageProps {
     params: {
-        boardId: string
-    }
+        boardId: string;
+    };
 }
 
 const BoardIdPage = async ({ params }: BoardIdPageProps) => {
-    const { orgId } = await auth()
+    const { orgId } = await auth();
 
     if (!orgId) {
-        redirect("/select-org")
+        redirect("/select-org");
     }
 
     const board = await prisma.board.findUnique({
         where: {
             id: params.boardId,
+            organizationId: orgId,
         },
-    })
+    });
 
     if (!board) {
-        notFound()
+        notFound();
     }
 
-    const lists = await fetchBoardList(params.boardId)
+    const lists = await fetchBoardList(params.boardId);
 
     return (
-        <div className="">
-            <ListContainer boardId={params.boardId} lists={lists} />
+        <div className="flex flex-col h-full">
+            <BoardHeader board={board} />
+            <div className="flex-1 overflow-hidden">
+                <Suspense
+                    fallback={
+                        <div className="p-4 flex items-start gap-x-3">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="shrink-0 h-full w-[272px]">
+                                    <Skeleton className="w-full h-20 rounded-md mb-3" />
+                                    <div className="space-y-3">
+                                        <Skeleton className="w-full h-16 rounded-md" />
+                                        <Skeleton className="w-full h-16 rounded-md" />
+                                        <Skeleton className="w-full h-16 rounded-md" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    }
+                >
+                    <ListContainer boardId={params.boardId} lists={lists} />
+                </Suspense>
+            </div>
         </div>
-    )
-}
+    );
+};
 
-export default BoardIdPage
+export default BoardIdPage;

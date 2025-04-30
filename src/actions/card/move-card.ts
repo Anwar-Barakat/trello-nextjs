@@ -3,11 +3,23 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { handleServerError } from "@/utils/error.utils";
-import { cardMoveSchema, type CardMoveSchema } from "@/schemas/card.schema";
 import { CardService } from "@/services/card.service";
 import { prisma } from "@/lib/prisma";
+import { createAuditLog } from "@/actions/audit-log/create-audit-log";
 
-export const moveCard = async (data: CardMoveSchema) => {
+interface MoveCardProps {
+  cardId: string;
+  sourceListId: string;
+  targetListId: string;
+  newOrder: number;
+}
+
+export const moveCard = async ({
+  cardId,
+  sourceListId,
+  targetListId,
+  newOrder,
+}: MoveCardProps) => {
   const { orgId, userId } = await auth();
 
   if (!userId || !orgId) {
@@ -19,87 +31,78 @@ export const moveCard = async (data: CardMoveSchema) => {
     };
   }
 
-  // Validate both lists exist and belong to the user's organization
-  const [sourceList, targetList] = await Promise.all([
-    prisma.list.findFirst({
+  try {
+    // Validate the card exists and belongs to this organization
+    const card = await prisma.card.findFirst({
       where: {
-        id: data.sourceListId,
-        board: {
-          organizationId: orgId,
-        },
-      },
-      include: {
-        board: {
-          select: {
-            id: true,
+        id: cardId,
+        listId: sourceListId,
+        list: {
+          board: {
+            organizationId: orgId,
           },
         },
       },
-    }),
-    prisma.list.findFirst({
+      include: {
+        list: {
+          select: {
+            boardId: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    if (!card) {
+      return {
+        success: false,
+        message: "Card not found or you don't have access",
+        code: "NOT_FOUND",
+        status: 404,
+      };
+    }
+
+    // Check if target list exists and belongs to the same board
+    const targetList = await prisma.list.findFirst({
       where: {
-        id: data.targetListId,
+        id: targetListId,
+        boardId: card.list.boardId,
         board: {
           organizationId: orgId,
         },
       },
-    }),
-  ]);
+      select: {
+        id: true,
+        title: true,
+      },
+    });
 
-  if (!sourceList || !targetList) {
-    return {
-      success: false,
-      message: "List not found or you don't have access",
-      code: "NOT_FOUND",
-      status: 404,
-    };
-  }
+    if (!targetList) {
+      return {
+        success: false,
+        message: "Target list not found or doesn't belong to the same board",
+        code: "INVALID_TARGET",
+        status: 400,
+      };
+    }
 
-  // Validate the card exists
-  const card = await prisma.card.findUnique({
-    where: {
-      id: data.cardId,
-    },
-  });
+    // Move the card
+    await CardService.move(cardId, sourceListId, targetListId, newOrder);
 
-  if (!card) {
-    return {
-      success: false,
-      message: "Card not found",
-      code: "NOT_FOUND",
-      status: 404,
-    };
-  }
+    // Create an audit log entry with string values instead of enums
+    await createAuditLog({
+      entityId: cardId,
+      entityType: "CARD",
+      action: "UPDATE",
+      organizationId: orgId,
+    });
 
-  // Validate the form data
-  const validationResult = cardMoveSchema.safeParse(data);
-
-  if (!validationResult.success) {
-    const errorMessage =
-      validationResult.error.errors[0]?.message || "Invalid form data";
-    return {
-      success: false,
-      message: errorMessage,
-      code: "VALIDATION_ERROR",
-      status: 400,
-    };
-  }
-
-  try {
-    const updatedCard = await CardService.move(
-      data.cardId,
-      data.sourceListId,
-      data.targetListId,
-      data.newOrder
-    );
-
-    // Revalidate cache
-    revalidatePath(`/board/${sourceList.board.id}`);
+    // Revalidate the board page to reflect changes
+    revalidatePath(`/board/${card.list.boardId}`);
 
     return {
       success: true,
-      message: "Card moved successfully",
-      data: updatedCard,
+      message: `Card moved from "${card.list.title}" to "${targetList.title}"`,
     };
   } catch (error) {
     return handleServerError(error);

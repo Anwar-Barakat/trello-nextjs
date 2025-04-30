@@ -50,6 +50,10 @@ model Card {
   @@index([listId])
 }
 
+// These enums will be available in your generated Prisma Client.
+// To use them throughout your TypeScript code, simply import them:
+//   import { AuditLogAction, ENTITY_TYPE } from "@prisma/client";
+
 enum AuditLogAction {
   CREATE
   UPDATE
@@ -62,15 +66,16 @@ enum ENTITY_TYPE {
   CARD
 }
 
+
 model AuditLog {
-  id String @id @default(uuid())
+  id             String         @id @default(uuid())
   organizationId String
-  action AuditLogAction
-  entityId String
-  entityType ENTITY_TYPE
-  userId String
-  userImage String @db.Text
-  userName String
+  action         AuditLogAction
+  entityId       String
+  entityType     ENTITY_TYPE
+  userId         String
+  userImage      String         @db.Text
+  userName       String
 
   createdAt DateTime @default(now())
 }

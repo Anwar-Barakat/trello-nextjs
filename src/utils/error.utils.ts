@@ -1,30 +1,61 @@
-import { AppError, type ErrorResponse } from "@/types/error.types";
+import { AppError } from "@/types/error.types";
 
 /**
- * Standardized error handler for server actions
+ * Handles server errors consistently across the application
+ * @param error The error to handle
+ * @returns A standardized error response
  */
-export const handleServerError = (error: unknown): ErrorResponse => {
-  console.error("[SERVER_ERROR]", error);
+export const handleServerError = (error: unknown) => {
+  console.error("Server error:", error);
 
   if (error instanceof AppError) {
     return {
-      error: error.message,
+      success: false,
+      message: error.message,
       code: error.code,
-      status: error.status,
+      status: error.statusCode || 500,
     };
   }
 
+  // Handle standard JavaScript errors
   if (error instanceof Error) {
+    let code = "SERVER_ERROR";
+    let status = 500;
+
+    // Infer more specific error types based on message
+    if (error.message.includes("not found")) {
+      code = "NOT_FOUND";
+      status = 404;
+    } else if (error.message.includes("already exists")) {
+      code = "CONFLICT";
+      status = 409;
+    } else if (error.message.includes("validation")) {
+      code = "VALIDATION_ERROR";
+      status = 400;
+    } else if (
+      error.message.includes("unauthorized") ||
+      error.message.includes("permission")
+    ) {
+      code = "UNAUTHORIZED";
+      status = 401;
+    } else if (error.message.includes("forbidden")) {
+      code = "FORBIDDEN";
+      status = 403;
+    }
+
     return {
-      error: error.message,
-      code: "INTERNAL_ERROR",
-      status: 500,
+      success: false,
+      message: error.message,
+      code,
+      status,
     };
   }
 
+  // Default generic error
   return {
-    error: "An unexpected error occurred",
-    code: "INTERNAL_ERROR",
+    success: false,
+    message: "An unexpected error occurred",
+    code: "SERVER_ERROR",
     status: 500,
   };
 };
