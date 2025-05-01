@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ListWrapper from "./list-wrapper";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
@@ -53,6 +53,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import type { ListWithCards } from "@/types/list-card.types";
+import type { Card } from "@prisma/client";
 
 interface ListItemProps {
     list: ListWithCards;
@@ -66,8 +67,14 @@ const ListItem = ({ list, index }: ListItemProps) => {
     const [showCardForm, setShowCardForm] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [title, setTitle] = useState(list.title);
+    const [cards, setCards] = useState(list.cards);
     const formRef = useRef<HTMLFormElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Update cards when list prop changes
+    useEffect(() => {
+        setCards(list.cards);
+    }, [list.cards]);
 
     const enableEditing = () => {
         setIsEditing(true);
@@ -120,6 +127,11 @@ const ListItem = ({ list, index }: ListItemProps) => {
         } else {
             toast.error("Failed to copy list");
         }
+    };
+
+    const handleCardCreated = (newCard: Card) => {
+        setCards(prevCards => [...prevCards, newCard]);
+        setShowCardForm(false);
     };
 
     const toggleCardForm = () => {
@@ -240,59 +252,6 @@ const ListItem = ({ list, index }: ListItemProps) => {
                                                             Copy List
                                                         </DropdownMenuItem>
                                                     </DropdownMenuGroup>
-
-                                                    <DropdownMenuSeparator />
-
-                                                    <DropdownMenuGroup>
-                                                        <DropdownMenuSub>
-                                                            <DropdownMenuSubTrigger>
-                                                                <Filter className="h-4 w-4 mr-2" />
-                                                                Filter Cards
-                                                            </DropdownMenuSubTrigger>
-                                                            <DropdownMenuPortal>
-                                                                <DropdownMenuSubContent>
-                                                                    <DropdownMenuItem>
-                                                                        <AlertCircle className="h-4 w-4 mr-2 text-red-500" />
-                                                                        High Priority
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem>
-                                                                        <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                                                                        Completed
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem>
-                                                                        <Users className="h-4 w-4 mr-2" />
-                                                                        Assigned to me
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuSubContent>
-                                                            </DropdownMenuPortal>
-                                                        </DropdownMenuSub>
-
-                                                        <DropdownMenuSub>
-                                                            <DropdownMenuSubTrigger>
-                                                                <SortAsc className="h-4 w-4 mr-2" />
-                                                                Sort Cards
-                                                            </DropdownMenuSubTrigger>
-                                                            <DropdownMenuPortal>
-                                                                <DropdownMenuSubContent>
-                                                                    <DropdownMenuItem>
-                                                                        <Clock className="h-4 w-4 mr-2" />
-                                                                        Date Created
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem>
-                                                                        <AlertCircle className="h-4 w-4 mr-2" />
-                                                                        Priority
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem>
-                                                                        <MoveVertical className="h-4 w-4 mr-2" />
-                                                                        Manual Order
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuSubContent>
-                                                            </DropdownMenuPortal>
-                                                        </DropdownMenuSub>
-                                                    </DropdownMenuGroup>
-
-                                                    <DropdownMenuSeparator />
-
                                                     <DropdownMenuItem
                                                         onClick={handleDelete}
                                                         className="text-red-600"
@@ -342,11 +301,11 @@ const ListItem = ({ list, index }: ListItemProps) => {
                                         className={cn(
                                             "px-1 mx-1 pt-1 flex flex-col gap-y-2 overflow-y-auto",
                                             snapshot.isDraggingOver && "bg-slate-100",
-                                            "min-h-[0.5px]", // This allows flex to consider the content's size
-                                            list.cards.length === 0 && "h-2" // Minimum height when empty
+                                            "min-h-[0.5px]",
+                                            cards.length === 0 && "h-2"
                                         )}
                                     >
-                                        {list.cards.map((card, index) => (
+                                        {cards.map((card, index) => (
                                             <CardItem
                                                 key={card.id}
                                                 card={{
@@ -368,27 +327,24 @@ const ListItem = ({ list, index }: ListItemProps) => {
 
                         {/* Add card button or form */}
                         {!isCollapsed && (
-                            <>
+                            <div className="px-1 mt-2">
                                 {showCardForm ? (
-                                    <div className="px-1 mt-2">
-                                        <CardForm
-                                            listId={list.id}
-                                            onClose={toggleCardForm}
-                                        />
-                                    </div>
+                                    <CardForm
+                                        listId={list.id}
+                                        onClose={() => setShowCardForm(false)}
+                                        onCardCreated={handleCardCreated}
+                                    />
                                 ) : (
-                                    <div className="px-1 mt-2">
-                                        <Button
-                                            onClick={toggleCardForm}
-                                            className="w-full rounded-sm py-1.5 px-2 text-sm text-muted-foreground bg-white/80 hover:bg-white/50 transition flex items-center justify-start"
-                                            variant="ghost"
-                                        >
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Add a card
-                                        </Button>
-                                    </div>
+                                    <Button
+                                        onClick={() => setShowCardForm(true)}
+                                        className="w-full rounded-sm py-1.5 px-2 text-sm text-muted-foreground bg-white/80 hover:bg-white/50 transition flex items-center justify-start"
+                                        variant="ghost"
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add a card
+                                    </Button>
                                 )}
-                            </>
+                            </div>
                         )}
                     </div>
                 </ListWrapper>

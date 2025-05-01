@@ -14,13 +14,15 @@ import { cardFormSchema, type CardFormSchema } from "@/schemas/card.schema";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import type { Card } from "@prisma/client";
 
 interface CardFormProps {
     listId: string;
     onClose: () => void;
+    onCardCreated?: (card: Card) => void;
 }
 
-const CardForm = ({ listId, onClose }: CardFormProps) => {
+const CardForm = ({ listId, onClose, onCardCreated }: CardFormProps) => {
     const router = useRouter();
     const params = useParams();
     const formRef = useRef<HTMLFormElement>(null);
@@ -80,8 +82,13 @@ const CardForm = ({ listId, onClose }: CardFormProps) => {
             reset({ title: "", listId: listId, description: "" });
             setShowExtendedOptions(false);
 
-            // Refresh the page to show the updated data
-            router.refresh();
+            // Call the onCardCreated callback if provided
+            if (onCardCreated && result.data) {
+                onCardCreated(result.data);
+            } else {
+                // Fallback to router refresh if no callback provided
+                router.refresh();
+            }
 
             // Return focus to title input
             setTimeout(() => {
