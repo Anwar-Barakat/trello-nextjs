@@ -66,7 +66,6 @@ enum ENTITY_TYPE {
   CARD
 }
 
-
 model AuditLog {
   id             String         @id @default(uuid())
   organizationId String
@@ -78,4 +77,12 @@ model AuditLog {
   userName       String
 
   createdAt DateTime @default(now())
+}
+
+model OrgBoardLimit {
+  id             String   @id @default(uuid())
+  organizationId String   @unique
+  count          Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

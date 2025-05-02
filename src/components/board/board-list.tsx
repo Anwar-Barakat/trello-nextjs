@@ -13,9 +13,6 @@ interface BoardListProps {
     initialBoards: Board[];
 }
 
-/**
- * Final board list component with all improvements
- */
 const BoardList = ({ initialBoards }: BoardListProps) => {
     const {
         boards,

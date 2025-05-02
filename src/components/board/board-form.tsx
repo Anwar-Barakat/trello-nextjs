@@ -17,7 +17,7 @@ import useBoardStore from '@/stores/board.store';
  */
 const BoardForm = () => {
     const { form, onSubmit, errors, isSubmitting } = useBoardForm();
-    const { isOpenModal, setIsOpenModal } = useBoardStore();
+    const { isOpenModal, setIsOpenModal, availableCount } = useBoardStore();
 
     const formErrors = form.formState.errors;
 
@@ -78,7 +78,7 @@ const BoardForm = () => {
                                     hint={FREE_BOARD_LIMIT_HINT}
                                 >
                                     <span className="text-sm text-muted-foreground font-medium cursor-help">
-                                        <span>({FREE_BOARD_LIMIT_REMAINING})</span>
+                                        <span>({FREE_BOARD_LIMIT_REMAINING - availableCount}) Remaining</span>
                                     </span>
                                 </GlobalTooltip>
                             </div>

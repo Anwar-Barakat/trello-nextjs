@@ -1,11 +1,15 @@
 import { create } from "zustand";
-import { createBoardSlice, type BoardSlice } from "./slices/board-slice";
+import {
+  type BoardActions,
+  boardSlice,
+  type BoardState,
+} from "./slices/board-slice";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-const useBoardStore = create<BoardSlice>()(
+const useBoardStore = create<BoardState & BoardActions>()(
   persist(
     (...args) => ({
-      ...createBoardSlice(...args),
+      ...boardSlice(...args),
     }),
     {
       name: "board",
@@ -16,7 +20,8 @@ const useBoardStore = create<BoardSlice>()(
 
 export const useBoards = () => useBoardStore((state) => state.boards);
 export const useIsLoading = () => useBoardStore((state) => state.isLoading);
-export const useIsBoardDeleting = () => useBoardStore((state) => state.isBoardDeleting);
+export const useIsBoardDeleting = () =>
+  useBoardStore((state) => state.isBoardDeleting);
 export const useErrors = () => useBoardStore((state) => state.errors);
 export const useSetErrors = () => useBoardStore((state) => state.setErrors);
 

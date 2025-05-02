@@ -5,9 +5,9 @@ import ListContainer from "./_components/list-container";
 import fetchBoardList from "@/actions/list/fetch-board-list";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import BoardHeader from "@/components/board/board-header";
+import useBoardStore from "@/stores/board.store";
+import { getAvailableCount } from "@/lib/org-limit";
 
 interface BoardIdPageProps {
     params: {
@@ -17,6 +17,7 @@ interface BoardIdPageProps {
 
 const BoardIdPage = async ({ params }: BoardIdPageProps) => {
     const { orgId } = await auth();
+    const { setAvailableCount } = useBoardStore();
 
     if (!orgId) {
         redirect("/select-org");
@@ -28,6 +29,10 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
             organizationId: orgId,
         },
     });
+
+    setAvailableCount(
+        await getAvailableCount()
+    )
 
     if (!board) {
         notFound();
