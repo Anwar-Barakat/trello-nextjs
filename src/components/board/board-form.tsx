@@ -11,6 +11,7 @@ import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } f
 import { memo, useEffect } from 'react';
 import { UnsplashForm } from './unsplash-form';
 import useBoardStore from '@/stores/board.store';
+import { StripeProLink } from './stripe-pro-link';
 
 type BoardFormProps = {
     availableCount: number;
@@ -65,9 +66,7 @@ const BoardForm = ({ availableCount, hasAvailableCount }: BoardFormProps) => {
 
                             {
                                 !hasAvailableCount && (
-                                    <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                                        <p>You have reached the maximum number of boards</p>
-                                    </div>
+                                    <StripeProLink />
                                 )
                             }
 
