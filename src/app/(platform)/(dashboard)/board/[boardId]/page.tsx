@@ -17,7 +17,7 @@ interface BoardIdPageProps {
 
 const BoardIdPage = async ({ params }: BoardIdPageProps) => {
     const { orgId } = await auth();
-    const { setAvailableCount } = useBoardStore();
+    const { setAvailableCount, setHasAvailableCount } = useBoardStore();
 
     if (!orgId) {
         redirect("/select-org");
