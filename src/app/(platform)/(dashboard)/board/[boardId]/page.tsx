@@ -42,7 +42,9 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
 
     return (
         <div className="flex flex-col h-full">
-            <BoardHeader board={board} />
+            <div className="p-4">
+                <h1 className="text-2xl font-bold">{board.title}</h1>
+            </div>
             <div className="flex-1 overflow-hidden">
                 <Suspense
                     fallback={

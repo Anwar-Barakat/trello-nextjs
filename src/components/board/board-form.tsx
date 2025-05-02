@@ -8,18 +8,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { PlusCircle } from 'lucide-react';
 import GlobalTooltip from '@/components/global/tooltip';
 import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } from '@/constants/free.constants';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { UnsplashForm } from './unsplash-form';
 import useBoardStore from '@/stores/board.store';
 
-/**
- * Board creation form component
- */
-const BoardForm = () => {
-    const { form, onSubmit, errors, isSubmitting } = useBoardForm();
-    const { isOpenModal, setIsOpenModal, availableCount } = useBoardStore();
+type BoardFormProps = {
+    availableCount: number;
+}
 
-    const formErrors = form.formState.errors;
+
+const BoardForm = ({ availableCount }: BoardFormProps) => {
+    const { form, onSubmit, errors, isSubmitting } = useBoardForm();
+    const { isOpenModal, setIsOpenModal, setAvailableCount, availableCount: availableCountStore } = useBoardStore();
+
+    useEffect(() => {
+        setAvailableCount(availableCount);
+    }, [availableCount, setAvailableCount]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,7 +82,7 @@ const BoardForm = () => {
                                     hint={FREE_BOARD_LIMIT_HINT}
                                 >
                                     <span className="text-sm text-muted-foreground font-medium cursor-help">
-                                        <span>({FREE_BOARD_LIMIT_REMAINING - availableCount}) Remaining</span>
+                                        <span>({availableCountStore}) Remaining</span>
                                     </span>
                                 </GlobalTooltip>
                             </div>

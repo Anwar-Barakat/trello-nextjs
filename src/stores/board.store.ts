@@ -12,7 +12,7 @@ const useBoardStore = create<BoardState & BoardActions>()(
       ...boardSlice(...args),
     }),
     {
-      name: "board",
+      name: "board-store",
       storage: createJSONStorage(() => localStorage),
     }
   )
