@@ -3,6 +3,8 @@ import type { StateCreator } from "zustand";
 
 export interface BoardState {
   boards: Board[];
+  availableCount: number;
+  hasAvailableCount: boolean;
   isLoading: boolean;
   isBoardDeleting: boolean;
   isBoardEditing: boolean;
@@ -11,6 +13,8 @@ export interface BoardState {
 }
 
 export interface BoardActions {
+  setAvailableCount: (availableCount: number) => void;
+  setHasAvailableCount: (hasAvailableCount: boolean) => void;
   setBoards: (boards: Board[]) => void;
   addBoard: (board: Board) => void;
   updateBoard: (updatedBoard: Board) => void;
@@ -22,11 +26,11 @@ export interface BoardActions {
   setIsOpenModal: (isOpen: boolean) => void;
 }
 
-export const createBoardSlice: StateCreator<BoardState & BoardActions> = (
-  set
-) => ({
+export const boardSlice: StateCreator<BoardState & BoardActions> = (set) => ({
   // Initial State
   boards: [],
+  availableCount: 0,
+  hasAvailableCount: false,
   isLoading: false,
   isBoardDeleting: false,
   isBoardEditing: false,
@@ -34,7 +38,8 @@ export const createBoardSlice: StateCreator<BoardState & BoardActions> = (
   isOpenModal: false,
   // Actions
   setBoards: (boards) => set({ boards }),
-
+  setAvailableCount: (availableCount) => set({ availableCount }),
+  setHasAvailableCount: (hasAvailableCount) => set({ hasAvailableCount }),
   addBoard: (board) =>
     set((state) => ({
       boards: [board, ...state.boards],

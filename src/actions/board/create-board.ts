@@ -8,6 +8,7 @@ import { boardFormSchema, type BoardFormSchema } from "@/schemas/board.schema";
 import { prisma } from "@/lib/prisma";
 import { unsplash } from "@/lib/unsplash";
 import type { Board } from "@/types/board.types";
+import { incrementAvailableCount } from "@/lib/org-limit";
 
 export const createBoard = async (data: BoardFormSchema) => {
   const { orgId, userId } = await auth();
@@ -77,6 +78,8 @@ export const createBoard = async (data: BoardFormSchema) => {
         console.error("Error tracking Unsplash download:", error);
       }
     }
+
+    await incrementAvailableCount(orgId);
 
     // Revalidate cache
     revalidatePath(`/organization/${orgId}`);

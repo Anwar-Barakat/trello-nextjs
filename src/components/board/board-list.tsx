@@ -13,9 +13,6 @@ interface BoardListProps {
     initialBoards: Board[];
 }
 
-/**
- * Final board list component with all improvements
- */
 const BoardList = ({ initialBoards }: BoardListProps) => {
     const {
         boards,
@@ -34,6 +31,7 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
 
     // Show loading state
     if (isLoading) {
+        const skeletonIds = [1, 2, 3, 4, 5, 6];
         return (
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -41,8 +39,8 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
                     <Skeleton className="h-8 w-[200px]" />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    {[...Array(6)].map((_, i) => (
-                        <div key={`skeleton-${i}`} className="flex flex-col gap-2">
+                    {skeletonIds.map((id) => (
+                        <div key={id} className="flex flex-col gap-2">
                             <Skeleton className="h-[100px] w-full" />
                             <Skeleton className="h-4 w-[50px]" />
                         </div>

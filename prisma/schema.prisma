@@ -8,13 +8,81 @@ datasource db {
 }
 
 model Board {
-  id             String   @id @default(uuid())
+  id             String  @id @default(uuid())
   title          String
   organizationId String
-  imageId        String?  // Store Unsplash image ID
-  imageThumbUrl  String?  // Store thumbnail URL
-  imageFullUrl   String?  // Store full URL
-  imageUserName  String?  // Store image creator's name for attribution
+  imageId        String?
+  imageThumbUrl  String?
+  imageFullUrl   String?
+  imageUserName  String?
+
+  lists List[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model List {
+  id      String @id @default(uuid())
+  title   String
+  order   Int
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards   Card[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boardId])
+}
+
+model Card {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  order       Int
+  listId      String
+  list        List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([listId])
+}
+
+// These enums will be available in your generated Prisma Client.
+// To use them throughout your TypeScript code, simply import them:
+//   import { AuditLogAction, ENTITY_TYPE } from "@prisma/client";
+
+enum AuditLogAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum ENTITY_TYPE {
+  BOARD
+  LIST
+  CARD
+}
+
+model AuditLog {
+  id             String         @id @default(uuid())
+  organizationId String
+  action         AuditLogAction
+  entityId       String
+  entityType     ENTITY_TYPE
+  userId         String
+  userImage      String         @db.Text
+  userName       String
+
+  createdAt DateTime @default(now())
+}
+
+model OrgBoardLimit {
+  id             String   @id @default(uuid())
+  organizationId String   @unique
+  count          Int
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

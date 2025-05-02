@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { BoardService } from "@/services/board.service";
 import { handleServerError } from "@/utils/error.utils";
 import type { Board } from "@/types/board.types";
+import { decrementAvailableCount } from "@/lib/org-limit";
 
 /**
  * Server action to delete a board
@@ -23,6 +24,10 @@ export const deleteBoard = async (boardId: string) => {
   try {
     // Delete board from database
     const deletedBoard = await BoardService.delete(boardId);
+
+    if (orgId) {
+      await decrementAvailableCount(orgId);
+    }
 
     // Revalidate cache
     if (orgId) {

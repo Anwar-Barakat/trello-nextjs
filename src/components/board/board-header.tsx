@@ -21,19 +21,9 @@ const BoardHeader = ({
 }: BoardHeaderProps) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-      <h3 className="text-lg font-medium">
-        Your Boards ({totalBoards})
+      <h3 className="text-primary font-bold text-2xl">
+        Your Boards
       </h3>
-      
-      <div className="relative w-full sm:w-auto">
-        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search boards..."
-          className="pl-8 w-full sm:w-[200px]"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
     </div>
   );
 };

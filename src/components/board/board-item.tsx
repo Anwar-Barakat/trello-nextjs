@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { DEFAULT_UNSPLASH_IMAGE } from '@/constants/unsplash.constants';
 import EditBoardModal from './edit-board-modal';
 import DeleteBoardModal from './delete-board-modal';
+import Link from 'next/link';
 
 interface BoardItemProps {
     board: Board;
@@ -40,28 +41,32 @@ const BoardItem = ({
     return (
         <div className="group relative rounded-xl overflow-hidden border bg-card hover:shadow-lg transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-1 shadow-sm">
             {/* Enhanced image section with hover overlay */}
-            <div className="aspect-video w-full relative bg-muted/50 group-hover:brightness-90 transition-all duration-300">
-                <Image
-                    src={imageUrl}
-                    alt={board.title}
-                    className="object-cover"
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    loading="lazy"
-                />
-                {attribution && (
-                    <div className="absolute bottom-0 right-0 bg-black/70 text-white text-[0.65rem] tracking-tight px-1.5 py-0.5 rounded-tl-md backdrop-blur-[1px]">
-                        {attribution}
-                    </div>
-                )}
-            </div>
+            <Link href={`/board/${board.id}`}>
+                <div className="aspect-video w-full relative bg-muted/50 group-hover:brightness-90 transition-all duration-300">
+                    <Image
+                        src={imageUrl}
+                        alt={board.title}
+                        className="object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        loading="lazy"
+                    />
+                    {attribution && (
+                        <div className="absolute bottom-0 right-0 bg-black/70 text-white text-[0.65rem] tracking-tight px-1.5 py-0.5 rounded-tl-md backdrop-blur-[1px]">
+                            {attribution}
+                        </div>
+                    )}
+                </div>
+            </Link>
 
             {/* Content section with smooth interactions */}
             <div className="p-3 space-y-1">
                 <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-medium truncate text-sm hover:text-primary transition-colors px-1">
-                        {board.title}
-                    </h3>
+                    <Link href={`/board/${board.id}`}>
+                        <h3 className="font-medium truncate text-sm hover:text-primary transition-colors px-1">
+                            {board.title}
+                        </h3>
+                    </Link>
                     <div className="flex gap-1">
                         <EditBoardModal
                             boardTitle={board.title}

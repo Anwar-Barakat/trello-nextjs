@@ -8,7 +8,8 @@ import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { useUnsplashImages } from "@/hooks/unsplash/useUnsplashImages";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import {  useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
+import { FALLBACK_UNSPLASH_IMAGES } from "@/constants/unsplash.constants";
 
 interface UnsplashFormProps {
     id: string;
@@ -44,7 +45,9 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
         );
     }
 
-    if (!images || images.length === 0) {
+    const displayImages = images?.length > 0 ? images : FALLBACK_UNSPLASH_IMAGES;
+
+    if (!displayImages || displayImages.length === 0) {
         return (
             <div className="text-gray-500 p-2 text-center">
                 No images available. Please try again.
@@ -60,7 +63,7 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
                 <FormItem className="space-y-3">
                     <FormLabel>Board Background</FormLabel>
                     <div className="grid grid-cols-3 gap-4">
-                        {images?.length > 0 && images?.map((image) => (
+                        {displayImages.map((image) => (
                             <button
                                 key={image.id}
                                 type="button"
