@@ -14,10 +14,13 @@ import useBoardStore from '@/stores/board.store';
 
 type BoardFormProps = {
     availableCount: number;
+    hasAvailableCount: boolean;
 }
 
 
-const BoardForm = ({ availableCount }: BoardFormProps) => {
+const BoardForm = ({ availableCount, hasAvailableCount }: BoardFormProps) => {
+    console.log('availableCount', availableCount);
+    console.log('hasAvailableCount', hasAvailableCount);
     const { form, onSubmit, errors, isSubmitting } = useBoardForm();
     const { isOpenModal, setIsOpenModal, setAvailableCount, availableCount: availableCountStore } = useBoardStore();
 
@@ -49,29 +52,29 @@ const BoardForm = ({ availableCount }: BoardFormProps) => {
                     </DialogHeader>
                     <Form {...form}>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <UnsplashForm id="image" />
+                            <UnsplashForm id="image" disabled={!hasAvailableCount} />
 
                             <FormTextInput
                                 control={form.control}
                                 name="title"
                                 label="Board Title"
                                 placeholder="Enter board title..."
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !hasAvailableCount}
                                 className="bg-background"
                             />
 
-                            {errors.length > 0 && (
-                                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                                    {errors.map((error) => (
-                                        <p key={error}>{error}</p>
-                                    ))}
-                                </div>
-                            )}
+                            {
+                                !hasAvailableCount && (
+                                    <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+                                        <p>You have reached the maximum number of boards</p>
+                                    </div>
+                                )
+                            }
 
                             <div className="flex items-center justify-between">
                                 <Button
                                     type="submit"
-                                    disabled={isSubmitting}
+                                    disabled={isSubmitting || !hasAvailableCount}
                                     className="w-full sm:w-auto"
                                     size="lg"
                                 >

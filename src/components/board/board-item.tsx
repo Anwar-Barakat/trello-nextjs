@@ -49,7 +49,9 @@ const BoardItem = ({
                         className="object-cover"
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority={false}
                         loading="lazy"
+                        quality={75}
                     />
                     {attribution && (
                         <div className="absolute bottom-0 right-0 bg-black/70 text-white text-[0.65rem] tracking-tight px-1.5 py-0.5 rounded-tl-md backdrop-blur-[1px]">

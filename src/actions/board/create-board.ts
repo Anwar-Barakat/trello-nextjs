@@ -8,9 +8,18 @@ import { boardFormSchema, type BoardFormSchema } from "@/schemas/board.schema";
 import { prisma } from "@/lib/prisma";
 import { unsplash } from "@/lib/unsplash";
 import type { Board } from "@/types/board.types";
-import { incrementAvailableCount } from "@/lib/org-limit";
+import { getAvailableCount, incrementAvailableCount } from "@/lib/org-limit";
 
 export const createBoard = async (data: BoardFormSchema) => {
+  const hasAvailableCount = await getAvailableCount();
+  if (!hasAvailableCount) {
+    return {
+      error: "You have reached the maximum number of boards",
+      code: "MAX_BOARDS_REACHED",
+      status: 400,
+    };
+  }
+
   const { orgId, userId } = await auth();
 
   if (!userId || !orgId) {

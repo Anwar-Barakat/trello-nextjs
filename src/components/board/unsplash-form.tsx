@@ -14,9 +14,10 @@ import { FALLBACK_UNSPLASH_IMAGES } from "@/constants/unsplash.constants";
 interface UnsplashFormProps {
     id: string;
     errors?: Record<string, string[] | undefined>;
+    disabled?: boolean;
 }
 
-export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
+export const UnsplashForm = ({ id, errors, disabled }: UnsplashFormProps) => {
     const { selectedImageId, setSelectedImageId } = useUnsplashStore();
     const { images, isLoading, error, refetch } = useUnsplashImages();
     const { pending } = useFormStatus();
@@ -38,6 +39,7 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
                     type="button"
                     onClick={refetch}
                     className="ml-2 underline text-blue-500"
+                    disabled={disabled}
                 >
                     Retry
                 </Button>
@@ -59,6 +61,7 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
         <FormField
             control={form.control}
             name={id}
+            disabled={disabled}
             render={({ field }) => (
                 <FormItem className="space-y-3">
                     <FormLabel>Board Background</FormLabel>
@@ -67,6 +70,7 @@ export const UnsplashForm = ({ id, errors }: UnsplashFormProps) => {
                             <button
                                 key={image.id}
                                 type="button"
+                                disabled={disabled}
                                 className={cn(
                                     "relative h-24 w-full rounded-md overflow-hidden cursor-pointer transition-all",
                                     field.value === image.id && "ring-2 ring-primary ring-offset-2",

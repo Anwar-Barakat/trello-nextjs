@@ -11,7 +11,7 @@ import { listBoard } from '@/actions/board/list-board';
 import { redirect } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
 import BoardHead from '@/components/board/board-head';
-import { getAvailableCount } from '@/lib/org-limit';
+import { getAvailableCount, hasAvailableCount } from '@/lib/org-limit';
 
 interface OrganizationIdPageProps {
     params: {
@@ -32,6 +32,7 @@ const OrganizationIdPage = async ({ params }: OrganizationIdPageProps) => {
     // Fetch initial board data
     const initialBoards = await listBoard() as Board[];
     const availableCount = await getAvailableCount();
+    const hasUserAvailableCount = await hasAvailableCount(params.organizationId);
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
@@ -39,7 +40,10 @@ const OrganizationIdPage = async ({ params }: OrganizationIdPageProps) => {
                 <BoardHead />
                 <CardContent>
                     <div className="grid gap-4">
-                        <BoardForm availableCount={availableCount} />
+                        <BoardForm
+                            availableCount={availableCount}
+                            hasAvailableCount={hasUserAvailableCount}
+                        />
                     </div>
                 </CardContent>
 

@@ -24,9 +24,15 @@ const BoardIdLayout = async ({ children, params }: BoardIdLayoutProps) => {
     return (
         <div
             className="min-h-screen w-full bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${board.imageFullUrl})` }}
+            style={{
+                backgroundImage: `url(${board.imageFullUrl})`,
+                backgroundAttachment: 'fixed',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            }}
         >
-            <div className="flex flex-col items-center justify-center pt-28">
+            <div className="flex flex-col items-center justify-center pt-28 bg-black/30">
                 {children}
             </div>
         </div>
