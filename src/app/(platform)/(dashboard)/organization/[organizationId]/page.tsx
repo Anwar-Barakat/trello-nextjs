@@ -12,6 +12,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
 import BoardHead from '@/components/board/board-head';
 import { getAvailableCount, hasAvailableCount } from '@/lib/org-limit';
+import { checkSubscription } from '@/lib/subscription';
 
 interface OrganizationIdPageProps {
     params: {
@@ -33,6 +34,7 @@ const OrganizationIdPage = async ({ params }: OrganizationIdPageProps) => {
     const initialBoards = await listBoard() as Board[];
     const availableCount = await getAvailableCount();
     const hasUserAvailableCount = await hasAvailableCount(params.organizationId);
+    const isSubscribed = await checkSubscription(params.organizationId);
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
@@ -43,6 +45,7 @@ const OrganizationIdPage = async ({ params }: OrganizationIdPageProps) => {
                         <BoardForm
                             availableCount={availableCount}
                             hasAvailableCount={hasUserAvailableCount}
+                            isSubscribed={isSubscribed}
                         />
                     </div>
                 </CardContent>

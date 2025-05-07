@@ -7,7 +7,7 @@ import FormTextInput from '@/components/global/form-text-input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
 import GlobalTooltip from '@/components/global/tooltip';
-import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT, FREE_BOARD_LIMIT_REMAINING } from '@/constants/free.constants';
+import { FREE_BOARD_LIMIT, FREE_BOARD_LIMIT_HINT } from '@/constants/free.constants';
 import { memo, useEffect } from 'react';
 import { UnsplashForm } from './unsplash-form';
 import useBoardStore from '@/stores/board.store';
@@ -16,16 +16,20 @@ import { StripeProLink } from './stripe-pro-link';
 type BoardFormProps = {
     availableCount: number;
     hasAvailableCount: boolean;
-}
+    isSubscribed: boolean;
+};
 
-
-const BoardForm = ({ availableCount, hasAvailableCount }: BoardFormProps) => {
-    const { form, onSubmit, errors, isSubmitting } = useBoardForm();
+const BoardForm = ({ availableCount, hasAvailableCount, isSubscribed }: BoardFormProps) => {
+    const { form, onSubmit, isSubmitting } = useBoardForm();
     const { isOpenModal, setIsOpenModal, setAvailableCount, availableCount: availableCountStore } = useBoardStore();
 
     useEffect(() => {
         setAvailableCount(availableCount);
     }, [availableCount, setAvailableCount]);
+
+    // Free users must have slots; subscribed users always allowed
+    const canUseSlots = isSubscribed || hasAvailableCount;
+    const isFormDisabled = isSubmitting || !canUseSlots;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,49 +48,44 @@ const BoardForm = ({ availableCount, hasAvailableCount }: BoardFormProps) => {
                     <span>Create New Board</span>
                 </div>
             </Button>
+
             <Dialog open={isOpenModal} onOpenChange={setIsOpenModal}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Create New Board</DialogTitle>
                     </DialogHeader>
 
-                    {
-                        !hasAvailableCount && (
-                            <StripeProLink />
-                        )
-                    }
+                    {!canUseSlots && <StripeProLink />}
+
                     <Form {...form}>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <UnsplashForm id="image" disabled={!hasAvailableCount} />
+                            <UnsplashForm id="image" disabled={!canUseSlots} />
 
                             <FormTextInput
                                 control={form.control}
                                 name="title"
                                 label="Board Title"
                                 placeholder="Enter board title..."
-                                disabled={isSubmitting || !hasAvailableCount}
+                                disabled={isFormDisabled}
                                 className="bg-background"
                             />
-
-
 
                             <div className="flex items-center justify-between">
                                 <Button
                                     type="submit"
-                                    disabled={isSubmitting || !hasAvailableCount}
+                                    disabled={isFormDisabled}
                                     className="w-full sm:w-auto"
                                     size="lg"
                                 >
                                     {isSubmitting ? 'Creating...' : 'Create Board'}
                                 </Button>
-                                <GlobalTooltip
-                                    content={FREE_BOARD_LIMIT}
-                                    hint={FREE_BOARD_LIMIT_HINT}
-                                >
-                                    <span className="text-sm text-muted-foreground font-medium cursor-help">
-                                        <span>({availableCountStore}) Remaining</span>
-                                    </span>
-                                </GlobalTooltip>
+                                {!isSubscribed && (
+                                    <GlobalTooltip content={FREE_BOARD_LIMIT} hint={FREE_BOARD_LIMIT_HINT}>
+                                        <span className="text-sm text-muted-foreground font-medium cursor-help">
+                                            <span>({availableCountStore}) Remaining</span>
+                                        </span>
+                                    </GlobalTooltip>
+                                )}
                             </div>
                         </form>
                     </Form>

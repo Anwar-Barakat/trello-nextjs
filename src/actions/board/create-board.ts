@@ -9,17 +9,9 @@ import { prisma } from "@/lib/prisma";
 import { unsplash } from "@/lib/unsplash";
 import type { Board } from "@/types/board.types";
 import { getAvailableCount, incrementAvailableCount } from "@/lib/org-limit";
+import { checkSubscription } from "@/lib/subscription";
 
 export const createBoard = async (data: BoardFormSchema) => {
-  const hasAvailableCount = await getAvailableCount();
-  if (!hasAvailableCount) {
-    return {
-      error: "You have reached the maximum number of boards",
-      code: "MAX_BOARDS_REACHED",
-      status: 400,
-    };
-  }
-
   const { orgId, userId } = await auth();
 
   if (!userId || !orgId) {
@@ -28,6 +20,21 @@ export const createBoard = async (data: BoardFormSchema) => {
       code: "UNAUTHORIZED",
       status: 401,
     };
+  }
+
+  // Check subscription status; subscribed users have unlimited boards
+  const isSubscribed = await checkSubscription(orgId);
+
+  // Enforce free tier limit for unsubscribed users
+  if (!isSubscribed) {
+    const availableCount = await getAvailableCount();
+    if (availableCount <= 0) {
+      return {
+        error: "You have reached the maximum number of boards",
+        code: "MAX_BOARDS_REACHED",
+        status: 400,
+      };
+    }
   }
 
   // Validate the form data
@@ -83,12 +90,14 @@ export const createBoard = async (data: BoardFormSchema) => {
           downloadLocation: `https://api.unsplash.com/photos/${imageDetails.imageId}/download`,
         });
       } catch (error) {
-        // Just log error, don't fail the board creation
         console.error("Error tracking Unsplash download:", error);
       }
     }
 
-    await incrementAvailableCount(orgId);
+    // Increment usage count for free users
+    if (!isSubscribed) {
+      await incrementAvailableCount(orgId);
+    }
 
     // Revalidate cache
     revalidatePath(`/organization/${orgId}`);

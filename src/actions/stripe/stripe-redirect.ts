@@ -23,8 +23,6 @@ export async function stripeRedirect(data: StripeSchema) {
         payment_method_types: ["card"],
         mode: "subscription",
         billing_address_collection: "auto",
-        // Don't use user.emailAddresses since it might be undefined
-        // Allow customer to enter email during checkout instead
         line_items: [
           {
             price_data: {

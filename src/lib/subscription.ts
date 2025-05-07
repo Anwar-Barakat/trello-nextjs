@@ -4,7 +4,7 @@ import { prisma } from "./prisma";
 const DAY_IN_MS = 86_400_000;
 
 export const checkSubscription = async (organizationId: string) => {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     throw new Error("Unauthorized");
