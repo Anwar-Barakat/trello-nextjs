@@ -20,8 +20,6 @@ type BoardFormProps = {
 
 
 const BoardForm = ({ availableCount, hasAvailableCount }: BoardFormProps) => {
-    console.log('availableCount', availableCount);
-    console.log('hasAvailableCount', hasAvailableCount);
     const { form, onSubmit, errors, isSubmitting } = useBoardForm();
     const { isOpenModal, setIsOpenModal, setAvailableCount, availableCount: availableCountStore } = useBoardStore();
 
@@ -51,6 +49,12 @@ const BoardForm = ({ availableCount, hasAvailableCount }: BoardFormProps) => {
                     <DialogHeader>
                         <DialogTitle>Create New Board</DialogTitle>
                     </DialogHeader>
+
+                    {
+                        !hasAvailableCount && (
+                            <StripeProLink />
+                        )
+                    }
                     <Form {...form}>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <UnsplashForm id="image" disabled={!hasAvailableCount} />
@@ -64,11 +68,7 @@ const BoardForm = ({ availableCount, hasAvailableCount }: BoardFormProps) => {
                                 className="bg-background"
                             />
 
-                            {
-                                !hasAvailableCount && (
-                                    <StripeProLink />
-                                )
-                            }
+
 
                             <div className="flex items-center justify-between">
                                 <Button

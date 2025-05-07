@@ -1,38 +1,30 @@
+"use server";
+
 import { auth } from "@clerk/nextjs/server";
 import type { StripeSchema } from "./schema";
 import stripe from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 
-export const stripeRedirect = async (data: StripeSchema) => {
-  const { userId, orgId, user } = await auth();
-  if (!userId || !orgId) {
-    return { error: "Unauthorized" };
-  }
-
-  const settingUrl = absoluteUrl(`/organization/${orgId}`);
-  let url = "";
-
+export async function stripeRedirect(data: StripeSchema) {
   try {
-    const orgSubscription = await prisma.orgSubscription.findUnique({
-      where: { organizationId: orgId },
-    });
+    const { userId, orgId } = await auth();
 
-    if (orgSubscription?.stripeCustomerId) {
-      const portalSession = await stripe.billingPortal.sessions.create({
-        customer: orgSubscription.stripeCustomerId,
-        return_url: settingUrl,
-      });
-      url = portalSession.url || settingUrl;
-    } else {
+    if (!userId || !orgId) {
+      return { error: "Unauthorized" };
+    }
+
+    const settingUrl = absoluteUrl(`/organization/${orgId}`);
+
+    try {
+      // Create checkout session without requiring email
       const checkoutSession = await stripe.checkout.sessions.create({
         success_url: settingUrl,
         cancel_url: settingUrl,
         payment_method_types: ["card"],
         mode: "subscription",
         billing_address_collection: "auto",
-        customer_email: user.emailAddresses[0].emailAddress,
+        // Don't use user.emailAddresses since it might be undefined
+        // Allow customer to enter email during checkout instead
         line_items: [
           {
             price_data: {
@@ -49,12 +41,15 @@ export const stripeRedirect = async (data: StripeSchema) => {
         ],
         metadata: { organizationId: orgId },
       });
-      url = checkoutSession.url || "";
+
+      const url = checkoutSession.url || "";
+      return { data: url };
+    } catch (stripeError) {
+      console.error("Stripe API error:", stripeError);
+      return { error: "Failed to create Stripe session" };
     }
   } catch (error) {
-    console.error("Stripe redirect error:", error);
+    console.error("General error in stripeRedirect:", error);
+    return { error: "An unexpected error occurred" };
   }
-
-  revalidatePath(`/organization/${orgId}`);
-  return { data: url };
-};
+}
