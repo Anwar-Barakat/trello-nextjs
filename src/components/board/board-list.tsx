@@ -8,12 +8,15 @@ import EmptyState from '@/components/global/empty-state';
 import BoardHeader from './board-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Board } from '@/types/board.types';
+import { useRouter } from 'next/navigation';
 
 interface BoardListProps {
     initialBoards: Board[];
+    organizationId: string;
 }
 
-const BoardList = ({ initialBoards }: BoardListProps) => {
+const BoardList = ({ initialBoards, organizationId }: BoardListProps) => {
+    const router = useRouter();
     const {
         boards,
         allBoards,
@@ -26,7 +29,8 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
         isLoading,
         isBoardEditing
     } = useBoard({
-        initialBoards
+        initialBoards,
+        organizationId
     });
 
     // Show loading state
@@ -111,6 +115,7 @@ const BoardList = ({ initialBoards }: BoardListProps) => {
                         isDeleting={deletingId === board.id}
                         onEdit={handleEditBoard}
                         isEditing={isBoardEditing}
+                        organizationId={organizationId}
                     />
                 ))}
             </div>

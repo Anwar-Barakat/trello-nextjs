@@ -23,42 +23,66 @@ interface OrganizationIdPageProps {
 /**
  * Organization settings page
  */
-const OrganizationIdPage = async ({ params }: OrganizationIdPageProps) => {
-    const { userId } = await auth();
+const OrganizationIdPage = async (props: OrganizationIdPageProps) => {
+    // Await the params to resolve dynamic params error
+    const params = await Promise.resolve(props.params);
+    const organizationId = params.organizationId;
+
+    const { userId, orgId } = await auth();
+
     // Authentication check
     if (!userId) {
         redirect('/sign-in');
     }
 
-    // Fetch initial board data
-    const initialBoards = await listBoard() as Board[];
-    const availableCount = await getAvailableCount();
-    const hasUserAvailableCount = await hasAvailableCount(params.organizationId);
-    const isSubscribed = await checkSubscription(params.organizationId);
+    // Organization check
+    if (!orgId) {
+        redirect('/select-org');
+    }
 
-    return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <Card>
-                <BoardHead />
-                <CardContent>
-                    <div className="grid gap-4">
-                        <BoardForm
-                            availableCount={availableCount}
-                            hasAvailableCount={hasUserAvailableCount}
-                            isSubscribed={isSubscribed}
-                        />
-                    </div>
-                </CardContent>
+    // Ensure the user is accessing their current organization
+    if (orgId !== organizationId) {
+        // Instead of redirecting, we'll let the client-side handle the organization switch
+        return null;
+    }
 
+    try {
+        // Fetch initial board data
+        const initialBoards = await listBoard() as Board[];
+        const availableCount = await getAvailableCount();
+        const hasUserAvailableCount = await hasAvailableCount(organizationId);
+        const isSubscribed = await checkSubscription(organizationId);
 
-                <CardContent>
-                    <div className="grid gap-4">
-                        <BoardList initialBoards={initialBoards ?? []} />
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
+        return (
+            <div className="flex-1 space-y-4 p-8 pt-6">
+                <Card>
+                    <BoardHead />
+                    <CardContent>
+                        <div className="grid gap-4">
+                            <BoardForm
+                                availableCount={availableCount}
+                                hasAvailableCount={hasUserAvailableCount}
+                                isSubscribed={isSubscribed}
+                            />
+                        </div>
+                    </CardContent>
+
+                    <CardContent>
+                        <div className="grid gap-4">
+                            <BoardList
+                                initialBoards={initialBoards ?? []}
+                                organizationId={organizationId}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    } catch (error) {
+        console.error('Error loading organization page:', error);
+        // If there's an error, redirect to the organization selection page
+        redirect('/select-org');
+    }
 };
 
 export default OrganizationIdPage;

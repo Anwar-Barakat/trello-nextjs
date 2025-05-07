@@ -7,14 +7,19 @@ import { updateBoard } from "@/actions/board/update-board";
 
 interface UseBoardOptions {
   initialBoards: Board[];
+  organizationId: string;
 }
 
 /**
  * Custom hook for board management
  */
-export const useBoard = ({ initialBoards }: UseBoardOptions) => {
+export const useBoard = ({
+  initialBoards,
+  organizationId,
+}: UseBoardOptions) => {
   const router = useRouter();
-  const { boards, setBoards, setIsBoardDeleting, isLoading, setIsLoading } = useBoardStore();
+  const { boards, setBoards, setIsBoardDeleting, isLoading, setIsLoading } =
+    useBoardStore();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,11 +90,14 @@ export const useBoard = ({ initialBoards }: UseBoardOptions) => {
           return;
         }
 
-        const updatedBoard = "data" in result && result.data
-          ? result.data
-          : ({ id: boardId, title: newTitle.trim() } as Board);
+        const updatedBoard =
+          "data" in result && result.data
+            ? result.data
+            : ({ id: boardId, title: newTitle.trim() } as Board);
 
-        setBoards(boards.map((b: Board) => (b.id === boardId ? updatedBoard : b)));
+        setBoards(
+          boards.map((b: Board) => (b.id === boardId ? updatedBoard : b))
+        );
         router.refresh();
       } catch (err) {
         console.error("Error editing board:", err);

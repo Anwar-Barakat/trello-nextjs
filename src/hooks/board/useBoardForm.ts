@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -34,9 +34,11 @@ export const useBoardForm = () => {
   });
 
   // Update form value when selectedImageId changes
-  if (selectedImageId !== form.getValues().image) {
-    form.setValue("image", selectedImageId || "");
-  }
+  useEffect(() => {
+    if (selectedImageId !== form.getValues().image) {
+      form.setValue("image", selectedImageId || "");
+    }
+  }, [selectedImageId, form]);
 
   const onSubmit = async (data: BoardFormSchema) => {
     try {
