@@ -1,0 +1,2 @@
+// This file is a symbolic link to src/app/(platform)/(dashboard)/board/[boardId]/_components/list-container.tsx
+export { default } from "@/app/(platform)/(dashboard)/board/[boardId]/_components/list-container"; 

@@ -27,7 +27,12 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                     <Menu className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 pt-20 w-72">
+            <SheetContent
+                side="left"
+                className="p-0 pt-10 w-72"
+                title="Organization Navigation"
+                description="Access your boards and organization settings"
+            >
                 <Sidebar storageKey="organization-sidebar" />
             </SheetContent>
         </Sheet>

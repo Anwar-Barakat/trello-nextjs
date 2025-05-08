@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 import { useBoard } from '@/hooks/board/useBoard';
 import BoardItem from './board-item';
 import EmptyState from '@/components/global/empty-state';
@@ -14,6 +14,46 @@ interface BoardListProps {
     initialBoards: Board[];
     organizationId: string;
 }
+
+/**
+ * Modern skeleton component for board items
+ */
+const BoardSkeleton = () => {
+    return (
+        <div className="group relative rounded-xl overflow-hidden border bg-card shadow-sm h-[calc(100%-2px)]">
+            {/* Image skeleton */}
+            <div className="aspect-video w-full relative bg-muted/50">
+                <Skeleton className="h-full w-full absolute" />
+            </div>
+
+            {/* Content section skeleton */}
+            <div className="p-3 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                    <Skeleton className="h-5 w-[70%]" />
+                    <div className="flex gap-1">
+                        <Skeleton className="h-8 w-8 rounded-md" />
+                        <Skeleton className="h-8 w-8 rounded-md" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * Board header skeleton
+ */
+const BoardHeaderSkeleton = () => {
+    return (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <Skeleton className="h-8 w-48" />
+            <div className="flex items-center gap-2 relative w-full sm:w-64">
+                <Skeleton className="h-10 w-full rounded-md" />
+                <Search className="h-4 w-4 absolute right-3 top-3 text-muted-foreground opacity-50" />
+            </div>
+        </div>
+    );
+};
 
 const BoardList = ({ initialBoards, organizationId }: BoardListProps) => {
     const router = useRouter();
@@ -35,19 +75,17 @@ const BoardList = ({ initialBoards, organizationId }: BoardListProps) => {
 
     // Show loading state
     if (isLoading) {
-        const skeletonIds = [1, 2, 3, 4, 5, 6];
+        // Create skeleton items with unique keys
+        const skeletonItems = Array.from({ length: 6 }).map((_, index) => ({
+            id: `skeleton-${Date.now()}-${index}`,
+        }));
+
         return (
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <Skeleton className="h-8 w-[200px]" />
-                    <Skeleton className="h-8 w-[200px]" />
-                </div>
+            <div className="space-y-6">
+                <BoardHeaderSkeleton />
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                    {skeletonIds.map((id) => (
-                        <div key={id} className="flex flex-col gap-2">
-                            <Skeleton className="h-[100px] w-full" />
-                            <Skeleton className="h-4 w-[50px]" />
-                        </div>
+                    {skeletonItems.map((item) => (
+                        <BoardSkeleton key={item.id} />
                     ))}
                 </div>
             </div>

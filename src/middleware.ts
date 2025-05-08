@@ -21,6 +21,12 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL("/select-org", req.url));
   }
 
+  // Handle old board URL format (/board/[boardId]) and redirect to new format (/organization/[orgId]/board/[boardId])
+  if (userId && orgId && currentUrl.pathname.match(/^\/board\/([^\/]+)$/)) {
+    const boardId = currentUrl.pathname.split('/').pop();
+    return NextResponse.redirect(new URL(`/organization/${orgId}/board/${boardId}`, req.url));
+  }
+
   return NextResponse.next();
 });
 

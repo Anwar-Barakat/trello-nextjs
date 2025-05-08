@@ -33,7 +33,6 @@ export const useBoardForm = () => {
     mode: "onChange",
   });
 
-  // Update form value when selectedImageId changes
   useEffect(() => {
     if (selectedImageId !== form.getValues().image) {
       form.setValue("image", selectedImageId || "");
@@ -46,7 +45,6 @@ export const useBoardForm = () => {
       setErrors([]);
       setStoreErrors([]);
 
-      // Make sure image is included
       const formData = {
         ...data,
         image: data.image || selectedImageId || "",

@@ -54,7 +54,7 @@ const OrganizationIdPage = async (props: OrganizationIdPageProps) => {
         const isSubscribed = await checkSubscription(organizationId);
 
         return (
-            <div className="flex-1 space-y-4 p-8 pt-6">
+            <div className="flex-1 space-y-4 px-16 lg:px-8 pt-24 lg:pt-6">
                 <Card>
                     <BoardHead />
                     <CardContent>
@@ -80,7 +80,6 @@ const OrganizationIdPage = async (props: OrganizationIdPageProps) => {
         );
     } catch (error) {
         console.error('Error loading organization page:', error);
-        // If there's an error, redirect to the organization selection page
         redirect('/select-org');
     }
 };
