@@ -50,27 +50,58 @@ export const deleteCard = async (cardId: string, boardId: string) => {
       };
     }
 
-    // Store the boardId from the card for revalidation
+    // Store the card's list title and boardId for the success message
+    const listTitle = card.list.title;
     const cardBoardId = card.list.boardId;
 
-    // Delete the card
-    await CardService.delete(cardId);
+    try {
+      // Delete the card
+      await CardService.delete(cardId);
 
-    // Create an audit log entry
-    await createAuditLog({
-      entityId: cardId,
-      entityType: "CARD",
-      action: "DELETE",
-      organizationId: orgId,
-    });
+      // Create an audit log entry
+      await createAuditLog({
+        entityId: cardId,
+        entityType: "CARD",
+        action: "DELETE",
+        organizationId: orgId,
+      });
+    } catch (deleteError) {
+      console.error("Error during card deletion:", deleteError);
 
-    // Revalidate both paths to ensure UI updates correctly
+      // Check if it's a NOT_FOUND error
+      if (
+        deleteError instanceof Error &&
+        deleteError.message?.includes("not found")
+      ) {
+        return {
+          success: false,
+          message: "Card not found. It may have been deleted already.",
+          code: "NOT_FOUND",
+          status: 404,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to delete card. Please try again.",
+        code: "DELETE_ERROR",
+        status: 500,
+      };
+    }
+
+    // Revalidate all paths to ensure UI updates correctly
     revalidatePath(`/board/${cardBoardId}`);
     revalidatePath(`/organization/${orgId}/board/${cardBoardId}`);
 
+    // If a boardId was passed that's different from the card's list boardId,
+    // also revalidate that path (in case of cross-board operations)
+    if (boardId && boardId !== cardBoardId) {
+      revalidatePath(`/board/${boardId}`);
+    }
+
     return {
       success: true,
-      message: `Card deleted from ${card?.list?.title}`,
+      message: `Card deleted from ${listTitle}`,
     };
   } catch (error) {
     console.error("Error deleting card:", error);

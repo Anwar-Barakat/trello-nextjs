@@ -66,6 +66,7 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
     const router = useRouter();
     const titleRef = useRef<HTMLInputElement>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isCopying, setIsCopying] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState("details");
@@ -100,17 +101,22 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
 
     const handleCopy = async () => {
         try {
+            setIsCopying(true);
             const result = await copyCard(card.id, card.list.boardId);
 
             if (result.success) {
                 toast.success("Card copied successfully");
                 onClose();
+                // Force a cache invalidation and refresh
                 router.refresh();
             } else {
-                toast.error(result.message);
+                toast.error(result.message || "Failed to copy card");
             }
         } catch (error) {
-            toast.error("Failed to copy card");
+            console.error("Error copying card:", error);
+            toast.error(`Failed to copy card. Please try again. ${error}`);
+        } finally {
+            setIsCopying(false);
         }
     };
 
@@ -122,19 +128,21 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
             if (result.success) {
                 toast.success("Card deleted successfully");
                 onClose();
+                // Force a cache invalidation and refresh
                 router.refresh();
             } else {
-                toast.error(result.message);
+                toast.error(result.message || "Failed to delete card");
             }
         } catch (error) {
-            toast.error("Failed to delete card");
+            console.error("Error deleting card:", error);
+            toast.error("Failed to delete card. Please try again.");
         } finally {
             setIsDeleting(false);
         }
     };
 
     // Helper function to get initials for avatars
-    const getInitials = (name: string = "User") => {
+    const getInitials = (name = "User") => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
     };
 
@@ -144,8 +152,16 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
         return `https://api.dicebear.com/7.x/avataaars/svg?seed=${hash}`;
     };
 
-    // Get activity events dynamically
-    const [activityEvents, setActivityEvents] = useState<any[]>([]);
+    // Define the activity event type
+    type ActivityEvent = {
+        id: string;
+        user: string;
+        action: string;
+        time: string;
+    };
+
+    // Get activity events with proper typing
+    const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
     // Fetch activity data from the database
     useEffect(() => {
@@ -154,29 +170,32 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
                 // In a real implementation, this would call an API endpoint
                 // to fetch actual activity for this card from the database
                 // For now we'll use just created/updated timestamps for minimal data
-                setActivityEvents([
+                const events: ActivityEvent[] = [
                     {
                         id: "created",
                         user: "System",
                         action: "created this card",
                         time: new Date(card.createdAt).toLocaleString(),
-                    },
-                    ...(card.updatedAt && card.createdAt.toString() !== card.updatedAt.toString() ? [
-                        {
-                            id: "updated",
-                            user: "System",
-                            action: "updated this card",
-                            time: new Date(card.updatedAt).toLocaleString(),
-                        }
-                    ] : [])
-                ]);
+                    }
+                ];
+
+                if (card.updatedAt && card.createdAt.toString() !== card.updatedAt.toString()) {
+                    events.push({
+                        id: "updated",
+                        user: "System",
+                        action: "updated this card",
+                        time: new Date(card.updatedAt).toLocaleString(),
+                    });
+                }
+
+                setActivityEvents(events);
             } catch (error) {
                 console.error("Failed to fetch card activity:", error);
             }
         };
 
         fetchCardActivity();
-    }, [card.id, card.createdAt, card.updatedAt]);
+    }, [card.createdAt, card.updatedAt]);
 
     // Get priority options
     const priorityOptions = [
@@ -386,9 +405,14 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
                                     variant="outline"
                                     className="w-full justify-start"
                                     onClick={handleCopy}
+                                    disabled={isCopying}
                                 >
-                                    <Copy className="h-4 w-4 mr-2" />
-                                    Copy Card
+                                    {isCopying ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Copy className="h-4 w-4 mr-2" />
+                                    )}
+                                    {isCopying ? "Copying..." : "Copy Card"}
                                 </Button>
                                 <Button
                                     type="button"
@@ -402,7 +426,7 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
                                     ) : (
                                         <Trash className="h-4 w-4 mr-2" />
                                     )}
-                                    Delete Card
+                                    {isDeleting ? "Deleting..." : "Delete Card"}
                                 </Button>
                             </div>
                         </div>

@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { handleServerError } from "@/utils/error.utils";
 import { CardService } from "@/services/card.service";
 import { prisma } from "@/lib/prisma";
-import { ENTITY_TYPE, AuditLogAction } from "@prisma/client";
 import { createAuditLog } from "@/actions/audit-log/create-audit-log";
 
 export const copyCard = async (
@@ -80,16 +79,19 @@ export const copyCard = async (
     // Copy the card
     const newCard = await CardService.copy(cardId, targetListId);
 
-    // Create an audit log entry with string values instead of enums
+    // Create an audit log entry
     await createAuditLog({
       entityId: newCard.id,
       entityType: "CARD",
-      action: "CREATE",
+      action: "COPY",
       organizationId: orgId,
     });
 
+    // Ensure proper revalidation of all relevant paths
     // Revalidate the board page to reflect changes
     revalidatePath(`/board/${boardId}`);
+    // Also revalidate organization board path if it exists
+    revalidatePath(`/organization/${orgId}/board/${boardId}`);
 
     return {
       success: true,
@@ -97,6 +99,7 @@ export const copyCard = async (
       data: newCard,
     };
   } catch (error) {
+    console.error("Error copying card:", error);
     return handleServerError(error);
   }
 };

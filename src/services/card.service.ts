@@ -2,6 +2,7 @@ import { AppError } from "@/types/error.types";
 import { prisma } from "@/lib/prisma";
 import type { CardFormSchema, CardUpdateSchema } from "@/schemas/card.schema";
 import type { Card } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export const CardService = {
   /**
@@ -69,6 +70,18 @@ export const CardService = {
    */
   async delete(cardId: string) {
     try {
+      // First check if the card exists
+      const cardExists = await prisma.card.findUnique({
+        where: {
+          id: cardId,
+        },
+      });
+
+      if (!cardExists) {
+        throw new AppError("Card not found", "CARD_NOT_FOUND");
+      }
+
+      // Delete the card
       const deletedCard = await prisma.card.delete({
         where: {
           id: cardId,
@@ -78,6 +91,16 @@ export const CardService = {
       return deletedCard;
     } catch (error) {
       console.error("CardService.delete error:", error);
+
+      // Handle specific Prisma errors
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        throw new AppError("Card not found", "CARD_NOT_FOUND");
+      }
+
+      // For any other error, throw a general card delete error
       throw new AppError("Failed to delete card", "CARD_DELETE_ERROR");
     }
   },
