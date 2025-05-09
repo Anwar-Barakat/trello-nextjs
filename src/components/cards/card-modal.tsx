@@ -299,7 +299,7 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
                                             {/* List location */}
                                             <div className="text-sm">
                                                 <p className="text-muted-foreground">
-                                                    In list: <span className="font-medium">{card.list.title}</span>
+                                                    In list: <span className="font-medium">{card?.list?.title}</span>
                                                 </p>
                                             </div>
 

@@ -51,6 +51,16 @@ const ListContainer = ({ boardId, lists: initialLists }: ListContainerProps) => 
     const searchInputRef = useRef<HTMLInputElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+    // Update lists when initialLists changes (from server)
+    useEffect(() => {
+        setLists(initialLists);
+    }, [initialLists]);
+
+    // Function to add a new list directly to the UI state
+    const handleListCreated = useCallback((newList: ListWithCards) => {
+        setLists(prevLists => [...prevLists, newList]);
+    }, []);
+
     // Set up keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -250,163 +260,99 @@ const ListContainer = ({ boardId, lists: initialLists }: ListContainerProps) => 
 
     return (
         <div className="flex flex-col h-full">
-            {/* Board Toolbar */}
-            <div className="flex items-center justify-between p-3 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-30">
-                <div className="flex items-center gap-2">
-                    {isSearchActive ? (
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                ref={searchInputRef}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search cards..."
-                                className="pl-9 h-9 w-64 bg-slate-50"
-                                onBlur={() => {
-                                    if (!searchQuery) {
-                                        setIsSearchActive(false);
-                                    }
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Escape') {
-                                        setIsSearchActive(false);
-                                        setSearchQuery("");
-                                    }
-                                }}
-                            />
-                            {searchQuery && (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6"
-                                    onClick={() => {
-                                        setSearchQuery("");
-                                        searchInputRef.current?.focus();
-                                    }}
-                                >
-                                    <X className="h-3 w-3" />
-                                </Button>
-                            )}
-                        </div>
-                    ) : (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            onClick={() => setIsSearchActive(true)}
-                        >
-                            <Search className="h-4 w-4" />
-                            <span>Search</span>
-                            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground ml-2">
-                                <span className="text-xs">⌘</span>F
-                            </kbd>
-                        </Button>
-                    )}
+            {/* Search and filter bar */}
+            <div className={cn(
+                "flex items-center gap-2 px-4 mb-2 transition-all duration-300",
+                isSearchActive ? "opacity-100" : "opacity-0 h-0 overflow-hidden mb-0"
+            )}>
+                {isSearchActive && (
+                    <Input
+                        ref={searchInputRef}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search cards..."
+                        className="h-8 text-sm"
+                    />
+                )}
+            </div>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="gap-2">
-                                <Filter className="h-4 w-4" />
-                                <span>Filter</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                            <DropdownMenuLabel>Filter Cards</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                <Users className="h-4 w-4 mr-2" />
-                                Assigned to me
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <AlertCircle className="h-4 w-4 mr-2 text-red-500" />
-                                High Priority
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                                Completed
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                <Settings className="h-4 w-4 mr-2" />
-                                Advanced Filters
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-
-                <div className="flex items-center gap-2">
+            {/* Toolbar */}
+            <div className="px-4 flex justify-between items-center mb-3">
+                {/* Search button */}
+                <div className="flex items-center gap-1.5">
                     <Button
                         variant="outline"
                         size="sm"
-                        className="gap-2"
-                        onClick={toggleCompactView}
+                        className="h-8 text-sm"
+                        onClick={() => {
+                            setIsSearchActive(!isSearchActive);
+                            if (!isSearchActive) {
+                                setTimeout(() => searchInputRef.current?.focus(), 100);
+                            } else {
+                                setSearchQuery("");
+                            }
+                        }}
                     >
-                        <LayoutGrid className="h-4 w-4" />
-                        <span>{isCompactView ? "Normal View" : "Compact View"}</span>
+                        <Search className="w-3.5 h-3.5 mr-1.5" />
+                        {isSearchActive ? "Clear search" : "Search"}
                     </Button>
 
+                    {/* Refresh button */}
                     <Button
                         variant="outline"
                         size="sm"
-                        className="gap-2"
+                        className="h-8 text-sm"
                         onClick={handleRefresh}
                         disabled={isRefreshing}
                     >
-                        <RefreshCw className={cn(
-                            "h-4 w-4",
-                            isRefreshing && "animate-spin"
-                        )} />
-                        <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
-                        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground ml-2">
-                            <span className="text-xs">⌘</span>R
-                        </kbd>
+                        <RefreshCw className={cn("w-3.5 h-3.5 mr-1.5", isRefreshing && "animate-spin")} />
+                        Refresh
                     </Button>
+                </div>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-9 w-9">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                    </DropdownMenu>
+                {/* View options */}
+                <div className="flex items-center gap-1.5">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-sm"
+                        onClick={toggleCompactView}
+                    >
+                        <LayoutGrid className="w-3.5 h-3.5 mr-1.5" />
+                        {isCompactView ? "Expanded view" : "Compact view"}
+                    </Button>
                 </div>
             </div>
 
-            {/* Main Board Area */}
-            <div
-                ref={scrollContainerRef}
-                className="flex-1 overflow-x-auto overflow-y-hidden"
-            >
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId="lists" type="list" direction="horizontal">
-                        {(provided, snapshot) => (
-                            <div
-                                ref={provided.innerRef}
-                                {...provided.droppableProps}
-                                className={cn(
-                                    "flex gap-x-3 h-full py-4",
-                                    snapshot.isDraggingOver && "bg-slate-50"
-                                )}
-                            >
-                                <ol className="flex gap-x-3 h-full items-start">
-                                    {filteredLists.map((list, index) => (
-                                        <ListItem
-                                            key={list.id}
-                                            list={list}
-                                            index={index}
-                                        />
-                                    ))}
-                                    {provided.placeholder}
-                                    <ListForm />
-                                    <div className="flex-shrink-0 w-1">
-                                        {/* This empty div helps with scrolling to the end */}
-                                    </div>
-                                </ol>
+            {/* Lists area */}
+            <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="lists" type="list" direction="horizontal">
+                    {(provided) => (
+                        <div
+                            className="flex-1 overflow-x-auto pb-2"
+                            ref={(element) => {
+                                provided.innerRef(element);
+                                if (scrollContainerRef.current !== element) {
+                                    scrollContainerRef.current = element;
+                                }
+                            }}
+                            {...provided.droppableProps}
+                        >
+                            <div className="flex gap-3 h-full items-start px-4">
+                                {filteredLists.map((list, index) => (
+                                    <ListItem
+                                        key={list.id}
+                                        list={list}
+                                        index={index}
+                                    />
+                                ))}
+                                {provided.placeholder}
+                                <ListForm onListCreated={handleListCreated} />
                             </div>
-                        )}
-                    </Droppable>
-                </DragDropContext>
-            </div>
+                        </div>
+                    )}
+                </Droppable>
+            </DragDropContext>
         </div>
     );
 };

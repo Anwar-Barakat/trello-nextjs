@@ -130,8 +130,14 @@ const ListItem = ({ list, index }: ListItemProps) => {
     };
 
     const handleCardCreated = (newCard: Card) => {
+        // Optimistically update the UI with the new card
         setCards(prevCards => [...prevCards, newCard]);
-        setShowCardForm(false);
+
+        // We can either hide the form automatically
+        // setShowCardForm(false);
+
+        // Or keep it open to add more cards (current behavior)
+        // By not hiding the form, we make it easier to add multiple cards in succession
     };
 
     const toggleCardForm = () => {
@@ -202,150 +208,125 @@ const ListItem = ({ list, index }: ListItemProps) => {
                                             ref={inputRef}
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
-                                            className="text-sm px-2 py-1 h-8 font-medium border-transparent hover:border-input focus:border-input transition truncate bg-white"
-                                            onBlur={(e) => handleSubmit(e as any)}
+                                            className="h-7 text-sm font-medium border-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input bg-white px-2.5"
+                                            onBlur={disableEditing}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Escape") disableEditing();
+                                                if (e.key === "Enter") e.currentTarget.form?.requestSubmit();
+                                            }}
                                         />
                                     </form>
                                 ) : (
-                                    <div className="flex items-center gap-x-2 flex-1">
-                                        <div
-                                            onClick={enableEditing}
-                                            className="w-full text-sm px-2.5 py-1 h-8 font-medium border-transparent truncate cursor-pointer"
-                                        >
-                                            {list.title}
-                                        </div>
-
-                                        <div className="flex items-center gap-x-1">
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6"
-                                                            onClick={toggleCollapse}
-                                                        >
-                                                            {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        {isCollapsed ? "Expand list" : "Collapse list"}
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger className="h-auto w-auto p-1 focus:outline-none">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" side="bottom" className="w-60">
-                                                    <DropdownMenuLabel>List Actions</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
-
-                                                    <DropdownMenuGroup>
-                                                        <DropdownMenuItem onClick={enableEditing}>
-                                                            <Edit2 className="h-4 w-4 mr-2" />
-                                                            Rename
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={handleCopy}>
-                                                            <Copy className="h-4 w-4 mr-2" />
-                                                            Copy List
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuGroup>
-                                                    <DropdownMenuItem
-                                                        onClick={handleDelete}
-                                                        className="text-red-600"
-                                                    >
-                                                        <Trash className="h-4 w-4 mr-2" />
-                                                        Delete List
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
+                                    <div
+                                        className="w-full text-sm px-2.5 py-1 font-medium cursor-pointer"
+                                        onClick={enableEditing}
+                                    >
+                                        {title}
                                     </div>
                                 )}
+
+                                <div className="flex items-center gap-0.5">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7"
+                                        onClick={toggleCollapse}
+                                    >
+                                        {isCollapsed ? (
+                                            <ChevronDown className="h-4 w-4" />
+                                        ) : (
+                                            <ChevronUp className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7"
+                                            >
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" side="bottom">
+                                            <DropdownMenuItem onClick={enableEditing}>
+                                                <Edit2 className="h-4 w-4 mr-2" />
+                                                Rename
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={handleCopy}>
+                                                <Copy className="h-4 w-4 mr-2" />
+                                                Duplicate
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem
+                                                className="text-red-600"
+                                                onClick={handleDelete}
+                                            >
+                                                <Trash className="h-4 w-4 mr-2" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </div>
 
-                            {/* Stats row */}
-                            <div className="px-2 pb-2 flex justify-between items-center text-xs text-muted-foreground">
-                                <div className="flex items-center gap-x-2">
-                                    <Badge variant="outline" className="h-5 bg-white">
-                                        {total} {total === 1 ? "card" : "cards"}
-                                    </Badge>
-
-                                    {/* Status badges would go here when we have proper status fields in the database */}
+                            {/* Status counts */}
+                            {total > 0 && (
+                                <div className="flex gap-2 px-2 pb-2 text-[0.65rem] text-muted-foreground">
+                                    <div className="flex items-center">
+                                        <span>{total} item{total === 1 ? '' : 's'}</span>
+                                    </div>
                                 </div>
-
-                                <div>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-5 w-5">
-                                                    <Filter className="h-3 w-3" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Filter cards</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
-                            </div>
+                            )}
                         </div>
 
-                        {/* Cards container */}
-                        {!isCollapsed && (
+                        {/* List content */}
+                        <div className={cn(
+                            "flex flex-col px-1 py-0.5",
+                            isCollapsed ? "h-0 overflow-hidden" : "flex-1 overflow-y-auto"
+                        )}>
                             <Droppable droppableId={list.id} type="card">
-                                {(provided, snapshot) => (
+                                {(provided) => (
                                     <div
                                         ref={provided.innerRef}
                                         {...provided.droppableProps}
-                                        className={cn(
-                                            "px-1 mx-1 pt-1 flex flex-col gap-y-2 overflow-y-auto",
-                                            snapshot.isDraggingOver && "bg-slate-100",
-                                            "min-h-[0.5px]",
-                                            cards.length === 0 && "h-2"
-                                        )}
+                                        className="flex flex-col gap-y-2 pt-1 min-h-[1px]"
                                     >
                                         {cards.map((card, index) => (
                                             <CardItem
                                                 key={card.id}
-                                                card={{
-                                                    ...card,
-                                                    list: {
-                                                        title: list.title,
-                                                        boardId: boardId as string,
-                                                        board: { id: boardId as string }
-                                                    }
-                                                }}
                                                 index={index}
+                                                card={card}
                                             />
                                         ))}
                                         {provided.placeholder}
                                     </div>
                                 )}
                             </Droppable>
-                        )}
 
-                        {/* Add card button or form */}
-                        {!isCollapsed && (
-                            <div className="px-1 mt-2">
-                                {showCardForm ? (
+                            {/* Card creation form */}
+                            {showCardForm ? (
+                                <div className="p-2">
                                     <CardForm
                                         listId={list.id}
                                         onClose={() => setShowCardForm(false)}
                                         onCardCreated={handleCardCreated}
                                     />
-                                ) : (
+                                </div>
+                            ) : (
+                                <div className="px-2 pt-1.5 pb-2">
                                     <Button
                                         onClick={() => setShowCardForm(true)}
-                                        className="w-full rounded-sm py-1.5 px-2 text-sm text-muted-foreground bg-white/80 hover:bg-white/50 transition flex items-center justify-start"
+                                        className="h-auto px-2 py-1.5 w-full justify-start text-muted-foreground text-sm flex items-center gap-2"
+                                        size="sm"
                                         variant="ghost"
                                     >
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add a card
+                                        <Plus className="h-4 w-4" />
+                                        <span>Add a card</span>
                                     </Button>
-                                )}
-                            </div>
-                        )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </ListWrapper>
             )}

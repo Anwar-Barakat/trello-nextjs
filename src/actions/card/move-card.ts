@@ -102,7 +102,7 @@ export const moveCard = async ({
 
     return {
       success: true,
-      message: `Card moved from "${card.list.title}" to "${targetList.title}"`,
+      message: `Card moved from "${card?.list?.title}" to "${targetList?.title}"`,
     };
   } catch (error) {
     return handleServerError(error);

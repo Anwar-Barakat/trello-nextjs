@@ -13,8 +13,13 @@ import FormTextInput from "@/components/global/form-text-input";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import type { ListWithCards } from "@/types/list-card.types";
 
-const ListForm = () => {
+interface ListFormProps {
+    onListCreated?: (list: ListWithCards) => void;
+}
+
+const ListForm = ({ onListCreated }: ListFormProps) => {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +51,7 @@ const ListForm = () => {
         formState: { errors },
         reset,
         setError,
+        watch,
     } = useForm<ListFormSchema>({
         resolver: zodResolver(listFormSchema),
         defaultValues: {
@@ -56,13 +62,37 @@ const ListForm = () => {
 
     const onSubmit = async (data: ListFormSchema) => {
         setIsSubmitting(true);
+
+        // Create a temporary list with optimistic data
+        const optimisticList: ListWithCards = {
+            id: `temp-${Date.now()}`,
+            title: data.title,
+            order: 999999, // Will be positioned at the end
+            boardId: boardId as string,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            cards: [],
+        };
+
         try {
+            // Update UI immediately with optimistic data
+            if (onListCreated) {
+                onListCreated(optimisticList);
+            }
+
+            // Submit to server
             const result = await createList(data);
+
             if (!result.success) {
+                // If server request fails, we should show error
+                // But we don't want to revert the optimistic update
+                // as that would be jarring, the router.refresh() later
+                // will correct the state if needed
                 setError("root", { message: result.message });
                 toast.error("Failed to create list");
                 return;
             }
+
             toast.success(`List "${data.title}" created successfully`);
             reset();
 
@@ -72,6 +102,8 @@ const ListForm = () => {
             // Option 2: Close the form after creating a list
             // disableEditing();
 
+            // Only refresh router to update other components that might need fresh data
+            // This should happen in the background and won't affect our optimistic update
             router.refresh();
         } catch (error) {
             toast.error("An unexpected error occurred");

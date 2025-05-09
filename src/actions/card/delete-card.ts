@@ -35,6 +35,7 @@ export const deleteCard = async (cardId: string, boardId: string) => {
         list: {
           select: {
             title: true,
+            boardId: true,
           },
         },
       },
@@ -49,10 +50,13 @@ export const deleteCard = async (cardId: string, boardId: string) => {
       };
     }
 
+    // Store the boardId from the card for revalidation
+    const cardBoardId = card.list.boardId;
+
     // Delete the card
     await CardService.delete(cardId);
 
-    // Create an audit log entry with string values instead of enums
+    // Create an audit log entry
     await createAuditLog({
       entityId: cardId,
       entityType: "CARD",
@@ -60,14 +64,16 @@ export const deleteCard = async (cardId: string, boardId: string) => {
       organizationId: orgId,
     });
 
-    // Revalidate the board page to reflect changes
-    revalidatePath(`/board/${boardId}`);
+    // Revalidate both paths to ensure UI updates correctly
+    revalidatePath(`/board/${cardBoardId}`);
+    revalidatePath(`/organization/${orgId}/board/${cardBoardId}`);
 
     return {
       success: true,
-      message: `Card deleted from ${card.list.title}`,
+      message: `Card deleted from ${card?.list?.title}`,
     };
   } catch (error) {
+    console.error("Error deleting card:", error);
     return handleServerError(error);
   }
 };
