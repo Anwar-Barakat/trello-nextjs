@@ -76,7 +76,6 @@ const CardModal = ({ card, isOpen, onClose }: CardModalProps) => {
         defaultValues: {
             title: card.title,
             description: card.description || "",
-            // Add any additional fields here
         },
     });
 

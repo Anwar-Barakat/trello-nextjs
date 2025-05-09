@@ -17,19 +17,21 @@ interface BoardIdPageProps {
 
 const BoardIdPage = async ({ params }: BoardIdPageProps) => {
     const { orgId } = await auth();
+    // Extract boardId early to avoid synchronous access
+    const { boardId, organizationId } = params;
 
     if (!orgId) {
         redirect("/select-org");
     }
 
     // Ensure the organization ID from the URL matches the authenticated user's organization
-    if (params.organizationId !== orgId) {
+    if (organizationId !== orgId) {
         redirect(`/organization/${orgId}`);
     }
 
     const board = await prisma.board.findUnique({
         where: {
-            id: params.boardId,
+            id: boardId,
             organizationId: orgId,
         },
     });
@@ -38,7 +40,7 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
         notFound();
     }
 
-    const lists = await fetchBoardList(params.boardId);
+    const lists = await fetchBoardList(boardId);
     const availableCount = await getAvailableCount();
 
     return (
@@ -63,7 +65,7 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
                         </div>
                     }
                 >
-                    <ListContainer boardId={params.boardId} lists={lists} />
+                    <ListContainer boardId={boardId} lists={lists} />
                 </Suspense>
             </div>
         </div>
